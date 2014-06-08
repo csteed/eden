@@ -1,7 +1,7 @@
 # Exploratory Data analysis ENvironment (EDEN)
 ====
 
-**EDEN** is an interactive visual analytics tool for exploring quantitative multivariate data.  **EDEN** is written in Java and runs on Mac OS X, Windows, and Linux operating systems. **EDEN** is developed and maintained by the Oak Ridge National Laboratory (ORNL) Computational Data Analytics Group (CDA).  The lead developer is Dr. Chad A. Steed (http://csteed.github.com/). 
+**EDEN** is an interactive visual analytics tool for exploring quantitative multivariate data.  **EDEN** is written in Java and runs on Mac OS X, Windows, and Linux operating systems. **EDEN** is developed and maintained by the [Oak Ridge National Laboratory](http://www.ornl.gov) [Computational Data Analytics Group](http://cda.ornl.gov).  The lead developer is [Chad A. Steed](http://csteed.github.com/). 
 
 If you are using **EDEN** for your work, we would greatly appreciate you citing the following paper:
 
@@ -9,9 +9,9 @@ Chad A. Steed, Daniel M. Ricciuto, Galen Shipman, Brian Smith, Peter E. Thornton
 
 ## Compiling the EDEN Source Code
 
-Compiling **EDEN** is straightforward.  The first step is to clone the repository.  We supply a Maven POM file to deal with the dependencies.  In the Eclipse development environment, import the code as a Maven project and Eclipse will build the class files.  
+Compiling **EDEN** is straightforward.  The first step is to clone the repository.  We supply a [Maven](http://maven.apache.org/) POM file to deal with the dependencies.  In the Eclipse development environment, import the code as a Maven project and Eclipse will build the class files.  
 
-To compile on the command line, issue the following commands:
+To compile **EDEN** on the command line, issue the following commands:
 
 ```
 $ mvn compile
