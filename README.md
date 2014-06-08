@@ -20,3 +20,7 @@ $ mvn package
 ## Running EDEN
 
 These commands will generate 2 jar files in the target directory.  Copy the jar file with dependencies into the scripts directory and run either the eden.bat script (Windows) or the eden.sh script (Mac or Linux).  The **EDEN** GUI should appear after issuing this command.  Example data files are provided in the data directory for trying **EDEN** out.  
+
+## Precompiled EDEN jar Files
+
+Earlier releases of **EDEN** precompiled jar files are available from our [Google Code Site](http://code.google.com/p/eden-vis/).  We will be slowly migrating these packages to github soon.
