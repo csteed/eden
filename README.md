@@ -1,5 +1,7 @@
 # Exploratory Data analysis ENvironment (EDEN)
 
+<img src="http://cda.ornl.gov/projects/eden/img/eden_logo.png" align="left" hspace="10" vspace="6">
+
 **EDEN** is an interactive visual analytics tool for exploring quantitative multivariate data.  **EDEN** is written in Java and runs on Mac OS X, Windows, and Linux operating systems. **EDEN** is developed and maintained by the [Oak Ridge National Laboratory](http://www.ornl.gov) [Computational Data Analytics Group](http://cda.ornl.gov).  The lead developer is [Chad A. Steed](http://csteed.github.com/). 
 
 If you are using **EDEN** for your work, we would greatly appreciate you citing the following paper:
