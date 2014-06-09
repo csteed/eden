@@ -23,4 +23,4 @@ These commands will generate 2 jar files in the target directory.  Copy the jar 
 
 ## Precompiled EDEN jar Files
 
-Earlier releases of **EDEN** precompiled jar files are available from our [Google Code Site](http://code.google.com/p/eden-vis/).  We will be slowly migrating these packages to github soon.
+Earlier releases of **EDEN** precompiled jar files are available from our [Google Code Site](http://code.google.com/p/eden-vis/).  We will be migrating these packages to github soon.
