@@ -26,15 +26,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 
-import javax.swing.JFrame;
-import javax.swing.JPanel;
-import javax.swing.SwingUtilities;
-import javax.swing.Timer;
+import javax.swing.*;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class PCPanel extends JPanel implements ActionListener,
+public class PCPanel extends JComponent implements ActionListener,
 		RendererListener, DataModelListener, ComponentListener, MouseListener,
 		MouseMotionListener, WindowListener {
 	private final Logger log = LoggerFactory.getLogger(PCPanel.class);
@@ -424,6 +421,8 @@ public class PCPanel extends JPanel implements ActionListener,
 	}
 
 	public void paintComponent(Graphics g) {
+		super.paintComponent(g);
+
 		Graphics2D g2 = (Graphics2D) g;
 		g2.setColor(getBackground());
 		g2.fillRect(0, 0, getWidth(), getHeight());
@@ -804,12 +803,23 @@ public class PCPanel extends JPanel implements ActionListener,
 
 		axisSpacing = (screenWidth - (BORDER_SIZE * 2)) / axisList.size();
 
-		int pcpHeight = (int) (screenHeight * .7);
-		scatterplotSize = screenHeight - pcpHeight
-				- (secondaryFont.getSize() * 2);
+		//int pcpHeight = (int) (screenHeight * .7);
+		//scatterplotSize = screenHeight - pcpHeight - (secondaryFont.getSize() * 2);
+
+
 		// if (scatterplotSize > (int)(axisSpacing * .8)) {
 		// scatterplotSize = (int)(axisSpacing * .8);
 		// }
+
+		scatterplotSize = (int)((axisSpacing - (secondaryFont.getSize())));
+		int pcpHeight =  screenHeight - scatterplotSize - (int)(secondaryFont.getSize()*1.5);
+
+		/* Keep the scatterplot size from becoming too large */
+		if (scatterplotSize > (.5 * pcpHeight)) {
+			scatterplotSize = (int)(.5 * pcpHeight);
+			pcpHeight = screenHeight - scatterplotSize - (int)(secondaryFont.getSize()*1.5);
+		}
+
 		scatterplotOffset = (axisSpacing - scatterplotSize) / 2;
 
 		axisTop = BORDER_SIZE + titleFont.getSize() + secondaryFont.getSize()
@@ -1499,6 +1509,7 @@ public class PCPanel extends JPanel implements ActionListener,
 		} else if (renderer == focusLineRenderer) {
 			focusImage = renderer.getRenderedImage();
 			repaint();
+
 		} else if (renderer instanceof NewLinesRenderer) {
 			newLinesImage = renderer.getRenderedImage();
 			// repaint();

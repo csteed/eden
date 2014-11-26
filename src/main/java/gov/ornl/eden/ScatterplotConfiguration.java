@@ -7,7 +7,7 @@ import java.awt.geom.Line2D;
 
 public class ScatterplotConfiguration {
 	private static final Font DEFAULT_AXIS_LABEL_FONT = new Font("Dialog",
-			Font.PLAIN, 10);
+			Font.PLAIN, 9);
 	private static final int DEFAULT_BORDER_SIZE = 4;
 	private static final Shape DEFAULT_POINT_SHAPE = new Line2D.Float(0, 0, 0, 0);
 	public final static Color DEFAULT_POINT_COLOR = new Color(20, 20, 80, 100);
