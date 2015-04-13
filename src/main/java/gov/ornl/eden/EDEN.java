@@ -445,22 +445,22 @@ public class EDEN implements DataModelListener, ActionListener, WindowListener,
 	static double sampleFactor = Double.NaN;
 
 	public static void main(String args[]) throws Exception {
-		// if (args.length > 0) {
-		// file = new File(args[0]);
-		//
-		// if (args.length == 2) {
-		// try {
-		// sampleFactor = Double.parseDouble(args[1]);
-		// if (sampleFactor < 0. || sampleFactor > 1.) {
-		// sampleFactor = Double.NaN;
-		// System.err.println("Second argument ignored from command line.  This argument is reserved for the sample factor but it is outside the valid range (0.0 to 1.0).");
-		// }
-		// } catch (NumberFormatException ex) {
-		// ex.printStackTrace();
-		// System.err.print("Second argument ignored from command line.  This argument is reserved for the sample factor but an exception occured in parsing it.");
-		// }
-		// }
-		// }
+		if (args.length > 0) {
+			file = new File(args[0]);
+
+			if (args.length == 2) {
+				try {
+					sampleFactor = Double.parseDouble(args[1]);
+					if (sampleFactor < 0. || sampleFactor > 1.) {
+						sampleFactor = Double.NaN;
+						System.err.println("Second argument ignored from command line.  This argument is reserved for the sample factor but it is outside the valid range (0.0 to 1.0).");
+					}
+				} catch (NumberFormatException ex) {
+					ex.printStackTrace();
+					System.err.print("Second argument ignored from command line.  This argument is reserved for the sample factor but an exception occured in parsing it.");
+				}
+			}
+		}
 
 		String edenHome = System.getProperty("EDEN_HOME");
 		if (edenHome == null) {

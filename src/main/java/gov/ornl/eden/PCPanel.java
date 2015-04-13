@@ -126,8 +126,8 @@ public class PCPanel extends JComponent implements ActionListener,
 	private boolean antialiasEnabled = true;
 
 	private int correlationIndicatorHeight = 10;
-	private Font titleFont = new Font("Dialog", Font.BOLD, 12);;
-	private Font secondaryFont = new Font("Dialog", Font.PLAIN, 10);;
+	private Font titleFont = new Font("Dialog", Font.BOLD, 12);
+	private Font secondaryFont = new Font("Dialog", Font.PLAIN, 10);
 	private int pcLineSize = 2;
 
 	public PCPanel(DataModel dataModel) {
@@ -480,8 +480,7 @@ public class PCPanel extends JComponent implements ActionListener,
 					}
 
 					g2.drawString(axis.column.getName(), axis.labelRectangle.x,
-							axis.labelRectangle.height
-									- g2.getFontMetrics().getDescent());
+							axis.labelRectangle.y + axis.labelRectangle.height - g2.getFontMetrics().getDescent());
 					// g2.draw(axis.labelRectangle);
 				}
 
@@ -823,7 +822,7 @@ public class PCPanel extends JComponent implements ActionListener,
 		scatterplotOffset = (axisSpacing - scatterplotSize) / 2;
 
 		axisTop = BORDER_SIZE + titleFont.getSize() + secondaryFont.getSize()
-				+ correlationIndicatorHeight + 10;
+				+ correlationIndicatorHeight + 14;
 		axisBottom = pcpHeight - secondaryFont.getSize() - 2;
 		axisHeight = axisBottom - axisTop;
 

@@ -343,8 +343,12 @@ public class PCAxesRenderer extends Renderer {
 			int titleHeight = g2.getFontMetrics().getHeight();
 			int titleWidth = g2.getFontMetrics().stringWidth(
 					axis.column.getName());
-			axis.labelRectangle = new Rectangle(axis.xPosition
-					- (titleWidth / 2), 0, titleWidth, titleHeight);
+
+			if (iaxis % 2 == 0) {
+				axis.labelRectangle = new Rectangle(axis.xPosition - (titleWidth / 2), 0, titleWidth, titleHeight);
+			} else {
+				axis.labelRectangle = new Rectangle(axis.xPosition - (titleWidth / 2), (int) (titleHeight/1.2), titleWidth, titleHeight);
+			}
 
 			// g2.setFont(titleFont);
 			// FontRenderContext frc = g2.getFontRenderContext();
