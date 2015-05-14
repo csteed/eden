@@ -1,5 +1,10 @@
 package gov.ornl.eden;
 
+import gov.ornl.datatable.Column;
+import gov.ornl.datatable.DataModel;
+import gov.ornl.datatable.DataModelListener;
+import gov.ornl.datatable.Tuple;
+
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -820,8 +825,9 @@ public class EDEN implements DataModelListener, ActionListener, WindowListener,
 
 	@Override
 	public void queryChanged(DataModel dataModel) {
-		arrangeByDispersionDifference.setEnabled(dataModel.isColumnQuerySet());
-		arrangeByTypicalDifference.setEnabled(dataModel.isColumnQuerySet());
+		boolean querySet = dataModel.getActiveQuery() != null && dataModel.getActiveQuery().hasColumnSelections();
+		arrangeByDispersionDifference.setEnabled(querySet);
+		arrangeByTypicalDifference.setEnabled(querySet);
 	}
 
 	@Override

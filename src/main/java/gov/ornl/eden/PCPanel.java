@@ -1,6 +1,14 @@
 package gov.ornl.eden;
 
-import gov.ornl.eden.Histogram.BinInfo;
+import gov.ornl.datatable.Column;
+import gov.ornl.datatable.ColumnSelectionRange;
+import gov.ornl.datatable.ColumnSortRecord;
+import gov.ornl.datatable.DataModel;
+import gov.ornl.datatable.DataModelListener;
+import gov.ornl.datatable.Histogram;
+import gov.ornl.datatable.Histogram.BinInfo;
+import gov.ornl.datatable.SummaryStats;
+import gov.ornl.datatable.Tuple;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
@@ -26,7 +34,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 
-import javax.swing.*;
+import javax.swing.JComponent;
+import javax.swing.SwingUtilities;
+import javax.swing.Timer;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -129,6 +139,9 @@ public class PCPanel extends JComponent implements ActionListener,
 	private Font titleFont = new Font("Dialog", Font.BOLD, 12);
 	private Font secondaryFont = new Font("Dialog", Font.PLAIN, 10);
 	private int pcLineSize = 2;
+	
+	private PCAxisSelection mouseOverAxisSelection;
+    private PCAxisSelection draggingAxisSelection;
 
 	public PCPanel(DataModel dataModel) {
 		focusScatterPlotConfig = new ScatterplotConfiguration();
@@ -484,65 +497,53 @@ public class PCPanel extends JComponent implements ActionListener,
 					// g2.draw(axis.labelRectangle);
 				}
 
-				Rectangle queryRect;
-				if (axis.column.isQuerySet()) {
-					queryRect = new Rectangle(axis.xPosition
-							- (QUERY_BOX_WIDTH / 2), axis.queryMaxPosition,
-							QUERY_BOX_WIDTH, axis.queryMinPosition
-									- axis.queryMaxPosition);
 
-					if (drawQueryLimits) {
-						String minLabel = PCAxesRenderer.DECIMAL_FORMAT
-								.format(axis.column.getMinQueryValue());
-						String maxLabel = PCAxesRenderer.DECIMAL_FORMAT
-								.format(axis.column.getMaxQueryValue());
+				if (!axis.axisSelectionList.isEmpty()) {
+                    for (PCAxisSelection axisSelection : axis.axisSelectionList) {
+                        Rectangle queryRect = new Rectangle(axis.xPosition - (QUERY_BOX_WIDTH / 2), axisSelection.getMaxPosition(),
+                                QUERY_BOX_WIDTH, axisSelection.getMinPosition() - axisSelection.getMaxPosition());
+                        if (drawQueryLimits) {
+                            String minLabel = PCAxesRenderer.DECIMAL_FORMAT.format(axisSelection.getColumnSelectionRange().getMinValue());
+                            String maxLabel = PCAxesRenderer.DECIMAL_FORMAT.format(axisSelection.getColumnSelectionRange().getMaxValue());
 
-						g2.setFont(secondaryFont);
-						int fontHeight = g2.getFontMetrics().getHeight();
+                            g2.setFont(secondaryFont);
+                            int fontHeight = g2.getFontMetrics().getHeight();
 
-						int stringWidth = g2.getFontMetrics().stringWidth(
-								maxLabel);
-						Rectangle labelRect = new Rectangle(axis.xPosition
-								- (stringWidth / 2), axis.queryMaxPosition - 1
-								- fontHeight, stringWidth, fontHeight);
-						g2.setColor(QUERY_RANGE_LABEL_BACKGROUND);
-						g2.fill(labelRect);
-						g2.setColor(Color.BLACK);
-						g2.drawString(maxLabel, axis.xPosition
-								- (stringWidth / 2), axis.queryMaxPosition - 3);
+                            int stringWidth = g2.getFontMetrics().stringWidth(maxLabel);
+                            Rectangle labelRect = new Rectangle(axis.xPosition
+                                    - (stringWidth / 2), axisSelection.getMaxPosition() - 1
+                                    - fontHeight, stringWidth, fontHeight);
+                            g2.setColor(QUERY_RANGE_LABEL_BACKGROUND);
+                            g2.fill(labelRect);
+                            g2.setColor(Color.BLACK);
+                            g2.drawString(maxLabel, axis.xPosition
+                                    - (stringWidth / 2), axisSelection.getMaxPosition() - 3);
 
-						stringWidth = g2.getFontMetrics().stringWidth(minLabel);
-						labelRect = new Rectangle(axis.xPosition
-								- (stringWidth / 2), axis.queryMinPosition + 2,
-								stringWidth, fontHeight);
-						g2.setColor(QUERY_RANGE_LABEL_BACKGROUND);
-						g2.fill(labelRect);
-						g2.setColor(Color.BLACK);
-						g2.drawString(minLabel, axis.xPosition
-								- (stringWidth / 2), axis.queryMinPosition
-								+ fontHeight);
-					}
+                            stringWidth = g2.getFontMetrics().stringWidth(minLabel);
+                            labelRect = new Rectangle(axis.xPosition
+                                    - (stringWidth / 2), axisSelection.getMinPosition() + 2,
+                                    stringWidth, fontHeight);
+                            g2.setColor(QUERY_RANGE_LABEL_BACKGROUND);
+                            g2.fill(labelRect);
+                            g2.setColor(Color.BLACK);
+                            g2.drawString(minLabel, axis.xPosition
+                                    - (stringWidth / 2), axisSelection.getMinPosition()
+                                    + fontHeight);
+                        }
 
-					g2.setColor(queryBoxEnabledFillColor);
-					g2.fill(queryRect);
+                        g2.setColor(queryBoxEnabledFillColor);
+                        g2.fill(queryRect);
 
-					g2.setColor(queryBoxOutlineColor);
+                        g2.setColor(queryBoxOutlineColor);
 
-					g2.drawLine(queryRect.x, queryRect.y, queryRect.x
-							+ queryRect.width, queryRect.y);
-					g2.drawLine(queryRect.x, queryRect.y, queryRect.x,
-							queryRect.y + 3);
-					g2.drawLine(queryRect.x + queryRect.width, queryRect.y,
-							queryRect.x + queryRect.width, queryRect.y + 3);
-					g2.drawLine(queryRect.x, queryRect.y + queryRect.height,
-							queryRect.x + queryRect.width, queryRect.y
-									+ queryRect.height);
-					g2.drawLine(queryRect.x, queryRect.y + queryRect.height,
-							queryRect.x, queryRect.y + queryRect.height - 3);
-					g2.drawLine(queryRect.x + queryRect.width, queryRect.y
-							+ queryRect.height, queryRect.x + queryRect.width,
-							queryRect.y + queryRect.height - 3);
-				}
+                        g2.drawLine(queryRect.x, queryRect.y, queryRect.x + queryRect.width, queryRect.y);
+                        g2.drawLine(queryRect.x, queryRect.y, queryRect.x, queryRect.y + 3);
+                        g2.drawLine(queryRect.x + queryRect.width, queryRect.y, queryRect.x + queryRect.width, queryRect.y + 3);
+                        g2.drawLine(queryRect.x, queryRect.y + queryRect.height, queryRect.x + queryRect.width, queryRect.y + queryRect.height);
+                        g2.drawLine(queryRect.x, queryRect.y + queryRect.height, queryRect.x, queryRect.y + queryRect.height - 3);
+                        g2.drawLine(queryRect.x + queryRect.width, queryRect.y + queryRect.height, queryRect.x + queryRect.width, queryRect.y + queryRect.height - 3);
+                    }
+                }
 			}
 		}
 
@@ -756,15 +757,14 @@ public class PCPanel extends JComponent implements ActionListener,
 		for (int ituple = 0; ituple < dataModel.getTupleCount(); ituple++) {
 			Tuple currentTuple = dataModel.getTuple(ituple);
 
-			Point tuplePoints[] = new Point[dataModel.getEnabledColumnCount()];
+			Point tuplePoints[] = new Point[dataModel.getColumnCount()];
 			for (int iaxis = 0; iaxis < axisList.size(); iaxis++) {
 				PCAxis axis = axisList.get(iaxis);
 				int xPosition = axis.xPosition;
 				float currentValue = currentTuple
 						.getElement(axis.dataModelIndex);
-				double normValue = (currentValue - axis.column.getMinValue())
-						/ (axis.column.getMaxValue() - axis.column
-								.getMinValue());
+				double normValue = (currentValue - axis.column.getSummaryStats().getMin())
+                        / (axis.column.getSummaryStats().getMax() - axis.column.getSummaryStats().getMin());
 				int currentYPosition = axis.bottomPosition
 						- (int) (normValue * axis.axisHeight);
 
@@ -842,6 +842,7 @@ public class PCPanel extends JComponent implements ActionListener,
 			PCAxis axis = axisList.get(iaxis);
 
 			Column column = axis.column;
+            SummaryStats columnQueryStats = dataModel.getActiveQuery().getColumnQuerySummaryStats(column);
 
 			axis.xPosition = BORDER_SIZE + (axisSpacing / 2)
 					+ (iaxis * axisSpacing);
@@ -868,147 +869,116 @@ public class PCPanel extends JComponent implements ActionListener,
 			scatterplotRectList.add(scatterplotRect);
 
 			// calculate the mean position
-			float normValue = (axis.column.getMean() - axis.column
-					.getMinValue())
-					/ (axis.column.getMaxValue() - axis.column.getMinValue());
-			axis.meanPosition = axis.bottomPosition
-					- (int) (normValue * axis.axisHeight);
+            float normValue = (axis.column.getSummaryStats().getMean() - axis.column.getSummaryStats().getMin()) /
+                    (axis.column.getSummaryStats().getMax() - axis.column.getSummaryStats().getMin());
+            axis.meanPosition = axis.bottomPosition - (int) (normValue * axis.axisHeight);
 
-			// calculate the query mean position
-			normValue = (axis.column.getQueryMean() - axis.column.getMinValue())
-					/ (axis.column.getMaxValue() - axis.column.getMinValue());
-			axis.queryMeanPosition = axis.bottomPosition
-					- (int) (normValue * axis.axisHeight);
-
+            // calculate the query mean position
+            if (columnQueryStats != null) {
+                normValue = (columnQueryStats.getMean() - axis.column.getSummaryStats().getMin())
+                        / (axis.column.getSummaryStats().getMax() - axis.column.getSummaryStats().getMin());
+                axis.queryMeanPosition = axis.bottomPosition
+                        - (int) (normValue * axis.axisHeight);
+            }
+            
 			// calculate mean-centered standard deviation range box
-			float lowValue = axis.column.getMean()
-					- axis.column.getStandardDeviation();
-			normValue = (lowValue - axis.column.getMinValue())
-					/ (axis.column.getMaxValue() - axis.column.getMinValue());
-			int lowValueY = axis.bottomPosition
-					- (int) (normValue * axis.axisHeight);
-			lowValueY = lowValueY > axis.bottomPosition ? axis.bottomPosition
-					: lowValueY;
-			float highValue = axis.column.getMean()
-					+ axis.column.getStandardDeviation();
-			normValue = (highValue - axis.column.getMinValue())
-					/ (axis.column.getMaxValue() - axis.column.getMinValue());
-			int highValueY = axis.bottomPosition
-					- (int) (normValue * axis.axisHeight);
-			highValueY = highValueY < axis.topPosition ? axis.topPosition
-					: highValueY;
-			axis.standardDeviationRangeRectangle = new Rectangle(
-					axis.axisBarRectangle.x + 3, highValueY,
-					axis.axisBarRectangle.width - 6, lowValueY - highValueY);
+            float lowValue = axis.column.getSummaryStats().getMean() -
+                    axis.column.getSummaryStats().getStandardDeviation();
+            normValue = (lowValue - axis.column.getSummaryStats().getMin()) /
+                    (axis.column.getSummaryStats().getMax() - axis.column.getSummaryStats().getMin());
+            int lowValueY = axis.bottomPosition -
+                    (int) (normValue * axis.axisHeight);
+            lowValueY = lowValueY > axis.bottomPosition ? axis.bottomPosition : lowValueY;
+            float highValue = axis.column.getSummaryStats().getMean() + axis.column.getSummaryStats().getStandardDeviation();
+            normValue = (highValue - axis.column.getSummaryStats().getMin()) / (axis.column.getSummaryStats().getMax() - axis.column.getSummaryStats().getMin());
+            int highValueY = axis.bottomPosition - (int) (normValue * axis.axisHeight);
+            highValueY = highValueY < axis.topPosition ? axis.topPosition : highValueY;
+            axis.standardDeviationRangeRectangle = new Rectangle(
+                    axis.axisBarRectangle.x + 3, highValueY,
+                    axis.axisBarRectangle.width - 6, lowValueY - highValueY);
 
 			// calculate query mean-centered standard deviation range box
-			float queryLowValue = axis.column.getQueryMean()
-					- axis.column.getQueryStandardDeviation();
-			normValue = (queryLowValue - axis.column.getMinValue())
-					/ (axis.column.getMaxValue() - axis.column.getMinValue());
-			int queryLowValueY = axis.bottomPosition
-					- (int) (normValue * axis.axisHeight);
-			queryLowValueY = queryLowValueY > axis.bottomPosition ? axis.bottomPosition
-					: queryLowValueY;
-			float queryHighValue = axis.column.getQueryMean()
-					+ axis.column.getQueryStandardDeviation();
-			normValue = (queryHighValue - axis.column.getMinValue())
-					/ (axis.column.getMaxValue() - axis.column.getMinValue());
-			int queryHighValueY = axis.bottomPosition
-					- (int) (normValue * axis.axisHeight);
-			queryHighValueY = queryHighValueY < axis.topPosition ? axis.topPosition
-					: queryHighValueY;
-			axis.queryStandardDeviationRangeRectangle = new Rectangle(
-					axis.axisBarRectangle.x + 7, queryHighValueY,
-					axis.axisBarRectangle.width - 14, queryLowValueY
-							- queryHighValueY);
+            if (columnQueryStats != null) {
+                float queryLowValue = columnQueryStats.getMean() - columnQueryStats.getStandardDeviation();
+                normValue = (queryLowValue - axis.column.getSummaryStats().getMin())
+                        / (axis.column.getSummaryStats().getMax() - axis.column.getSummaryStats().getMin());
+                int queryLowValueY = axis.bottomPosition - (int) (normValue * axis.axisHeight);
+                queryLowValueY = queryLowValueY > axis.bottomPosition ? axis.bottomPosition : queryLowValueY;
+                float queryHighValue = columnQueryStats.getMean() + columnQueryStats.getStandardDeviation();
+                normValue = (queryHighValue - axis.column.getSummaryStats().getMin()) / (axis.column.getSummaryStats().getMax() - axis.column.getSummaryStats().getMin());
+                int queryHighValueY = axis.bottomPosition - (int) (normValue * axis.axisHeight);
+                queryHighValueY = queryHighValueY < axis.topPosition ? axis.topPosition : queryHighValueY;
+                axis.queryStandardDeviationRangeRectangle = new Rectangle(axis.axisBarRectangle.x + 7, queryHighValueY,
+                        axis.axisBarRectangle.width - 14, queryLowValueY - queryHighValueY);
+            }
 
-			// calculate the median line position
-			normValue = (axis.column.getMedian() - axis.column.getMinValue())
-					/ (axis.column.getMaxValue() - axis.column.getMinValue());
-			axis.medianPosition = axis.bottomPosition
-					- (int) (normValue * axis.axisHeight);
+            // calculate the median line position
+            normValue = (axis.column.getSummaryStats().getMedian() - axis.column.getSummaryStats().getMin()) /
+                    (axis.column.getSummaryStats().getMax() - axis.column.getSummaryStats().getMin());
+            axis.medianPosition = axis.bottomPosition - (int) (normValue * axis.axisHeight);
 
-			// calculate the query median line position
-			normValue = (axis.column.getQueryMedian() - axis.column
-					.getMinValue())
-					/ (axis.column.getMaxValue() - axis.column.getMinValue());
-			axis.queryMedianPosition = axis.bottomPosition
-					- (int) (normValue * axis.axisHeight);
-
+            // calculate the query median line position
+            if (columnQueryStats != null) {
+                normValue = (columnQueryStats.getMedian() - axis.column.getSummaryStats().getMin())
+                        / (axis.column.getSummaryStats().getMax() - axis.column.getSummaryStats().getMin());
+                axis.queryMedianPosition = axis.bottomPosition - (int) (normValue * axis.axisHeight);
+            }
+            
 			if (this.showFrequencyInfo) {
 				axis.frequencyDisplayRectangle = new Rectangle(
 						axis.axisBarRectangle);
 			}
 
 			// calculate IQR range box
-			normValue = (axis.column.getQ1() - axis.column.getMinValue())
-					/ (axis.column.getMaxValue() - axis.column.getMinValue());
-			int q1Y = axis.bottomPosition - (int) (normValue * axis.axisHeight);
-			normValue = (axis.column.getQ3() - axis.column.getMinValue())
-					/ (axis.column.getMaxValue() - axis.column.getMinValue());
-			int q3Y = axis.bottomPosition - (int) (normValue * axis.axisHeight);
-			axis.IQRBoxRectangle = new Rectangle(axis.axisBarRectangle.x + 3,
-					q3Y, axis.axisBarRectangle.width - 6, q1Y - q3Y);
+            normValue = (axis.column.getSummaryStats().getQuantile1() - axis.column.getSummaryStats().getMin())
+                    / (axis.column.getSummaryStats().getMax() - axis.column.getSummaryStats().getMin());
+            int q1Y = axis.bottomPosition - (int) (normValue * axis.axisHeight);
+            normValue = (axis.column.getSummaryStats().getQuantile3() - axis.column.getSummaryStats().getMin())
+                    / (axis.column.getSummaryStats().getMax() - axis.column.getSummaryStats().getMin());
+            int q3Y = axis.bottomPosition - (int) (normValue * axis.axisHeight);
+            axis.IQRBoxRectangle = new Rectangle(axis.axisBarRectangle.x + 3,
+                    q3Y, axis.axisBarRectangle.width - 6, q1Y - q3Y);
 
-			// calculate Query IQR range box
-			normValue = (axis.column.getQueryQ1() - axis.column.getMinValue())
-					/ (axis.column.getMaxValue() - axis.column.getMinValue());
-			int queryQ1Y = axis.bottomPosition
-					- (int) (normValue * axis.axisHeight);
-			normValue = (axis.column.getQueryQ3() - axis.column.getMinValue())
-					/ (axis.column.getMaxValue() - axis.column.getMinValue());
-			int queryQ3Y = axis.bottomPosition
-					- (int) (normValue * axis.axisHeight);
-			axis.QueryIQRBoxRectangle = new Rectangle(
-					axis.axisBarRectangle.x + 7, queryQ3Y,
-					axis.axisBarRectangle.width - 14, queryQ1Y - queryQ3Y);
+            // calculate Query IQR range box
+            if (columnQueryStats != null) {
+                normValue = (columnQueryStats.getQuantile1() - axis.column.getSummaryStats().getMin()) / (axis.column.getSummaryStats().getMax() - axis.column.getSummaryStats().getMin());
+                int queryQ1Y = axis.bottomPosition - (int) (normValue * axis.axisHeight);
+                normValue = (columnQueryStats.getQuantile3() - axis.column.getSummaryStats().getMin())
+                        / (axis.column.getSummaryStats().getMax() - axis.column.getSummaryStats().getMin());
+                int queryQ3Y = axis.bottomPosition - (int) (normValue * axis.axisHeight);
+                axis.QueryIQRBoxRectangle = new Rectangle(axis.axisBarRectangle.x + 7, queryQ3Y, axis.axisBarRectangle.width - 14, queryQ1Y - queryQ3Y);
+            }
+            
+            // calculate IQR whiskers
+            normValue = (axis.column.getSummaryStats().getLowerWhisker() - axis.column.getSummaryStats().getMin())
+                    / (axis.column.getSummaryStats().getMax() - axis.column.getSummaryStats().getMin());
+            int lowerWhiskerY = axis.bottomPosition - (int) (normValue * axis.axisHeight);
+            normValue = (axis.column.getSummaryStats().getUpperWhisker() - axis.column.getSummaryStats().getMin()) / (axis.column.getSummaryStats().getMax() - axis.column.getSummaryStats().getMin());
+            int upperWhiskerY = axis.bottomPosition - (int) (normValue * axis.axisHeight);
+            axis.IQRWhiskerRectangle = new Rectangle(axis.IQRBoxRectangle.x, upperWhiskerY, axis.IQRBoxRectangle.width, lowerWhiskerY - upperWhiskerY);
 
-			// calculate IQR whiskers
-			normValue = (axis.column.getLowerWhisker() - axis.column
-					.getMinValue())
-					/ (axis.column.getMaxValue() - axis.column.getMinValue());
-			int lowerWhiskerY = axis.bottomPosition
-					- (int) (normValue * axis.axisHeight);
-			normValue = (axis.column.getUpperWhisker() - axis.column
-					.getMinValue())
-					/ (axis.column.getMaxValue() - axis.column.getMinValue());
-			int upperWhiskerY = axis.bottomPosition
-					- (int) (normValue * axis.axisHeight);
-			axis.IQRWhiskerRectangle = new Rectangle(axis.IQRBoxRectangle.x,
-					upperWhiskerY, axis.IQRBoxRectangle.width, lowerWhiskerY
-							- upperWhiskerY);
-
-			// calculate Query IQR whiskers
-			normValue = (axis.column.getQueryLowerWhisker() - axis.column
-					.getMinValue())
-					/ (axis.column.getMaxValue() - axis.column.getMinValue());
-			int queryLowerWhiskerY = axis.bottomPosition
-					- (int) (normValue * axis.axisHeight);
-			normValue = (axis.column.getQueryUpperWhisker() - axis.column
-					.getMinValue())
-					/ (axis.column.getMaxValue() - axis.column.getMinValue());
-			int queryUpperWhiskerY = axis.bottomPosition
-					- (int) (normValue * axis.axisHeight);
-			axis.QueryIQRWhiskerRectangle = new Rectangle(
-					axis.QueryIQRBoxRectangle.x, queryUpperWhiskerY,
-					axis.QueryIQRBoxRectangle.width, queryLowerWhiskerY
-							- queryUpperWhiskerY);
-
-			if (column.isQuerySet()) {
-				normValue = (axis.column.getMaxQueryValue() - axis.column
-						.getMinValue())
-						/ (axis.column.getMaxValue() - axis.column
-								.getMinValue());
-				axis.queryMaxPosition = axis.bottomPosition
-						- (int) (normValue * axis.axisHeight);
-				normValue = (axis.column.getMinQueryValue() - axis.column
-						.getMinValue())
-						/ (axis.column.getMaxValue() - axis.column
-								.getMinValue());
-				axis.queryMinPosition = axis.bottomPosition
-						- (int) (normValue * axis.axisHeight);
-			}
+            // calculate Query IQR whiskers
+            if (columnQueryStats != null) {
+                normValue = (columnQueryStats.getLowerWhisker() - axis.column.getSummaryStats().getMin())
+                        / (axis.column.getSummaryStats().getMax() - axis.column.getSummaryStats().getMin());
+                int queryLowerWhiskerY = axis.bottomPosition - (int) (normValue * axis.axisHeight);
+                normValue = (columnQueryStats.getUpperWhisker() - axis.column.getSummaryStats().getMin())
+                        / (axis.column.getSummaryStats().getMax() - axis.column.getSummaryStats().getMin());
+                int queryUpperWhiskerY = axis.bottomPosition - (int) (normValue * axis.axisHeight);
+                axis.QueryIQRWhiskerRectangle = new Rectangle(axis.QueryIQRBoxRectangle.x, queryUpperWhiskerY,
+                        axis.QueryIQRBoxRectangle.width, queryLowerWhiskerY - queryUpperWhiskerY);
+            }
+            
+            if (!axis.axisSelectionList.isEmpty()) {
+                for (PCAxisSelection axisSelection : axis.axisSelectionList) {
+                    normValue = (axisSelection.getColumnSelectionRange().getMaxValue() - axis.column.getSummaryStats().getMin()) / (axis.column.getSummaryStats().getMax() - axis.column.getSummaryStats().getMin());
+                    int maxPosition = axis.bottomPosition - (int) (normValue * axis.axisHeight);
+                    axisSelection.setMaxPosition(maxPosition);
+                    normValue = (axisSelection.getColumnSelectionRange().getMinValue() - axis.column.getSummaryStats().getMin()) / (axis.column.getSummaryStats().getMax() - axis.column.getSummaryStats().getMin());
+                    int minPosition = axis.bottomPosition - (int) (normValue * axis.axisHeight);
+                    axisSelection.setMinPosition(minPosition);
+                }
+            }
 		}
 	}
 
@@ -1127,56 +1097,70 @@ public class PCPanel extends JComponent implements ActionListener,
 
 				endDragPoint.setLocation(event.getPoint());
 
-				mouseOverAxis.queryMaxPosition += deltaY;
-				mouseOverAxis.queryMinPosition += deltaY;
+				mouseOverAxisSelection.setMaxPosition(mouseOverAxisSelection.getMaxPosition() + deltaY);
+	            mouseOverAxisSelection.setMinPosition(mouseOverAxisSelection.getMinPosition() + deltaY);
 
-				if (mouseOverAxis.queryMaxPosition < mouseOverAxis.topPosition) {
-					deltaY = mouseOverAxis.topPosition
-							- mouseOverAxis.queryMaxPosition;
-					mouseOverAxis.queryMaxPosition = mouseOverAxis.topPosition;
-					mouseOverAxis.queryMinPosition += deltaY;
-				}
-				if (mouseOverAxis.queryMinPosition > mouseOverAxis.bottomPosition) {
-					deltaY = mouseOverAxis.queryMinPosition
-							- mouseOverAxis.bottomPosition;
-					mouseOverAxis.queryMaxPosition -= deltaY;
-					mouseOverAxis.queryMinPosition = mouseOverAxis.bottomPosition;
-				}
+	            if (mouseOverAxisSelection.getMaxPosition() < mouseOverAxis.topPosition) {
+                    deltaY = mouseOverAxis.topPosition - mouseOverAxisSelection.getMaxPosition();
+                    mouseOverAxisSelection.setMaxPosition(mouseOverAxis.topPosition);
+                    mouseOverAxisSelection.setMinPosition(mouseOverAxisSelection.getMinPosition() + deltaY);
+                }
+	            
+                if (mouseOverAxisSelection.getMinPosition() > mouseOverAxis.bottomPosition) {
+                    deltaY = mouseOverAxisSelection.getMinPosition() - mouseOverAxis.bottomPosition;
+                    mouseOverAxisSelection.setMaxPosition(mouseOverAxisSelection.getMaxPosition() - deltaY);
+                    mouseOverAxisSelection.setMinPosition(mouseOverAxis.bottomPosition);
+                }
+                
+                float normPos = (mouseOverAxisSelection.getMaxPosition() - mouseOverAxis.topPosition) / (float) mouseOverAxis.axisHeight;
+                float maxValue = mouseOverAxis.column.getSummaryStats().getMax() - (normPos * (mouseOverAxis.column.getSummaryStats().getMax() - mouseOverAxis.column.getSummaryStats().getMin()));
 
+                normPos = (mouseOverAxisSelection.getMinPosition() - mouseOverAxis.topPosition) / (float) mouseOverAxis.axisHeight;
+                float minValue = mouseOverAxis.column.getSummaryStats().getMax() - (normPos * (mouseOverAxis.column.getSummaryStats().getMax() - mouseOverAxis.column.getSummaryStats().getMin()));
+
+                mouseOverAxisSelection.getColumnSelectionRange().setMinValue(minValue);
+                mouseOverAxisSelection.getColumnSelectionRange().setMaxValue(maxValue);
 			} else {
-
 				endDragPoint.setLocation(event.getPoint());
-				mouseOverAxis.column.setQueryFlag(true);
-				mouseOverAxis.queryMaxPosition = startDragPoint.y < endDragPoint.y ? startDragPoint.y
-						: endDragPoint.y;
-				if (mouseOverAxis.queryMaxPosition < mouseOverAxis.topPosition) {
-					mouseOverAxis.queryMaxPosition = mouseOverAxis.topPosition;
-				}
-				mouseOverAxis.queryMinPosition = startDragPoint.y > endDragPoint.y ? startDragPoint.y
-						: endDragPoint.y;
-				if (mouseOverAxis.queryMinPosition > mouseOverAxis.bottomPosition) {
-					mouseOverAxis.queryMinPosition = mouseOverAxis.bottomPosition;
-				}
+//              mouseOverAxis.column.setQueryFlag(true);
+
+              int queryMaxPosition = startDragPoint.y < endDragPoint.y ? startDragPoint.y : endDragPoint.y;
+              if (queryMaxPosition < mouseOverAxis.topPosition) {
+                  queryMaxPosition = mouseOverAxis.topPosition;
+              }
+
+              int queryMinPosition = startDragPoint.y > endDragPoint.y ? startDragPoint.y : endDragPoint.y;
+              if (queryMinPosition > mouseOverAxis.bottomPosition) {
+                  queryMinPosition = mouseOverAxis.bottomPosition;
+              }
+
+              float normPos = (queryMaxPosition - mouseOverAxis.topPosition) / (float) mouseOverAxis.axisHeight;
+              float maxValue = mouseOverAxis.column.getSummaryStats().getMax() - (normPos * (mouseOverAxis.column.getSummaryStats().getMax() - mouseOverAxis.column.getSummaryStats().getMin()));
+//              mouseOverAxis.column.setMaxQueryValue(mouseOverAxis.column.getMaxValue() - (normPos * (mouseOverAxis.column.getMaxValue() - mouseOverAxis.column.getMinValue())));
+
+              normPos = (queryMinPosition - mouseOverAxis.topPosition) / (float) mouseOverAxis.axisHeight;
+              float minValue = mouseOverAxis.column.getSummaryStats().getMax() - (normPos * (mouseOverAxis.column.getSummaryStats().getMax() - mouseOverAxis.column.getSummaryStats().getMin()));
+//              mouseOverAxis.column.setMinQueryValue(mouseOverAxis.column.getMaxValue() - (normPos * (mouseOverAxis.column.getMaxValue() - mouseOverAxis.column.getMinValue())));
+
+
+              if (draggingAxisSelection == null) {
+                  ColumnSelectionRange selectionRange = dataModel.addColumnSelectionRangeToActiveQuery(mouseOverAxis.column, minValue, maxValue);
+                  draggingAxisSelection = new PCAxisSelection(selectionRange);
+                  mouseOverAxis.axisSelectionList.add(draggingAxisSelection);
+              } else {
+                  draggingAxisSelection.getColumnSelectionRange().setMaxValue(maxValue);
+                  draggingAxisSelection.getColumnSelectionRange().setMinValue(minValue);
+              }
+
+              draggingAxisSelection.setMinPosition(queryMinPosition);
+              draggingAxisSelection.setMaxPosition(queryMaxPosition);
 			}
 
-			float normPos = (mouseOverAxis.queryMaxPosition - mouseOverAxis.topPosition)
-					/ (float) mouseOverAxis.axisHeight;
-			mouseOverAxis.column
-					.setMaxQueryValue(mouseOverAxis.column.getMaxValue()
-							- (normPos * (mouseOverAxis.column.getMaxValue() - mouseOverAxis.column
-									.getMinValue())));
-			normPos = (mouseOverAxis.queryMinPosition - mouseOverAxis.topPosition)
-					/ (float) mouseOverAxis.axisHeight;
-			mouseOverAxis.column
-					.setMinQueryValue(mouseOverAxis.column.getMaxValue()
-							- (normPos * (mouseOverAxis.column.getMaxValue() - mouseOverAxis.column
-									.getMinValue())));
 			repaint();
 		} else if (mouseOverLabelAxis != null) {
 			draggingAxis = true;
 			endDragPoint.setLocation(event.getPoint());
-			newAxisPosition = (endDragPoint.x - (axisSpacing / 2) + (QUERY_BOX_WIDTH / 2))
-					/ axisSpacing;
+			newAxisPosition = (endDragPoint.x - (axisSpacing / 2) + (QUERY_BOX_WIDTH / 2)) / axisSpacing;
 			repaint();
 		}
 	}
@@ -1199,15 +1183,19 @@ public class PCPanel extends JComponent implements ActionListener,
 
 			if (axis.axisBarRectangle.contains(event.getPoint())) {
 				mouseOverAxis = axis;
-				if (mouseOverAxis.column.isQuerySet()) {
-					if ((event.getY() <= mouseOverAxis.queryMinPosition)
-							&& (event.getY() >= mouseOverAxis.queryMaxPosition)) {
-						newCursor = Cursor
-								.getPredefinedCursor(Cursor.HAND_CURSOR);
-						mouseOverAxisQuery = true;
-						return;
-					}
-				}
+				
+				if (!mouseOverAxis.axisSelectionList.isEmpty()) {
+                    for (PCAxisSelection selection : mouseOverAxis.axisSelectionList) {
+                        if ((event.getY() <= selection.getMinPosition()) &&
+                                event.getY() >= selection.getMaxPosition()) {
+                            newCursor = Cursor.getPredefinedCursor(Cursor.HAND_CURSOR);
+                            mouseOverAxisQuery = true;
+                            mouseOverAxisSelection = selection;
+                            return;
+                        }
+                    }
+                }
+				
 				newCursor = Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR);
 			}
 
@@ -1237,38 +1225,48 @@ public class PCPanel extends JComponent implements ActionListener,
 								.contains(event.getPoint())) {
 					double normPosition = (double) (event.getPoint().y - mouseOverAxis.axisBarRectangle.y)
 							/ (double) mouseOverAxis.axisBarRectangle.height;
-					double valueAtMousePoint = mouseOverAxis.column
-							.getMaxValue()
-							- (normPosition * (mouseOverAxis.column
-									.getMaxValue() - mouseOverAxis.column
-									.getMinValue()));
-					Histogram.BinInfo binInfo = mouseOverAxis.column
-							.getHistogram().findBin(valueAtMousePoint);
-					mouseOverAxisHighlightedBinInfo = binInfo;
-					mouseOverAxis.column.setQueryFlag(true);
-					mouseOverAxis.column
-							.setMaxQueryValue((float) binInfo.highEdge);
-					mouseOverAxis.column
-							.setMinQueryValue((float) binInfo.lowEdge);
+					double valueAtMousePoint = mouseOverAxis.column.getSummaryStats().getMax() - (normPosition * (mouseOverAxis.column.getSummaryStats().getMax() - mouseOverAxis.column.getSummaryStats().getMin()));
+                    Histogram.BinInfo binInfo = mouseOverAxis.column.getSummaryStats().getHistogram().findBin(valueAtMousePoint);
+                    mouseOverAxisHighlightedBinInfo = binInfo;
+//					double valueAtMousePoint = mouseOverAxis.column
+//							.getMaxValue()
+//							- (normPosition * (mouseOverAxis.column
+//									.getMaxValue() - mouseOverAxis.column
+//									.getMinValue()));
+//					Histogram.BinInfo binInfo = mouseOverAxis.column
+//							.getHistogram().findBin(valueAtMousePoint);
+//					mouseOverAxisHighlightedBinInfo = binInfo;
+//					mouseOverAxis.column.setQueryFlag(true);
+//					mouseOverAxis.column
+//							.setMaxQueryValue((float) binInfo.highEdge);
+//					mouseOverAxis.column
+//							.setMinQueryValue((float) binInfo.lowEdge);
 					dataModel.setQueriedTuples();
 					// startFocusLineRenderer();
 					// startContextLineRenderer();
 					// startScatterplotRenderers();
 					// repaint();
 				} else if (event.getClickCount() == 1) {
-					if (mouseOverAxis.column.isQuerySet()) {
-						mouseOverAxis.column.setQueryFlag(false);
-						mouseOverAxis.column
-								.setMaxQueryValue(mouseOverAxis.column
-										.getMaxValue());
-						mouseOverAxis.column
-								.setMinQueryValue(mouseOverAxis.column
-										.getMinValue());
-						dataModel.setQueriedTuples();
-						// startFocusLineRenderer();
-						// startScatterplotRenderers();
-						// repaint();
-					}
+					if (mouseOverAxisSelection != null) {
+                        log.debug("Mouse clicked on axis selection");
+                        mouseOverAxis.axisSelectionList.remove(mouseOverAxisSelection);
+                        dataModel.clearColumnSelectionRange(mouseOverAxisSelection.getColumnSelectionRange());
+                        mouseOverAxisSelection = null;
+                        dataModel.setQueriedTuples();
+                    }
+//					if (mouseOverAxis.column.isQuerySet()) {
+//						mouseOverAxis.column.setQueryFlag(false);
+//						mouseOverAxis.column
+//								.setMaxQueryValue(mouseOverAxis.column
+//										.getMaxValue());
+//						mouseOverAxis.column
+//								.setMinQueryValue(mouseOverAxis.column
+//										.getMinValue());
+//						dataModel.setQueriedTuples();
+//						// startFocusLineRenderer();
+//						// startScatterplotRenderers();
+//						// repaint();
+//					}
 				}
 			} else if (mouseOverScatterplotRectIndex != -1) {
 				if (event.getClickCount() == 2) {
@@ -1319,6 +1317,7 @@ public class PCPanel extends JComponent implements ActionListener,
 		if (dragging) {
 			dragging = false;
 			dataModel.setQueriedTuples();
+			draggingAxisSelection = null;
 			// startFocusLineRenderer();
 			// repaint();
 		} else if (mouseOverLabelAxis != null) {
@@ -1376,20 +1375,21 @@ public class PCPanel extends JComponent implements ActionListener,
 	private void recalculateQueryBoxes() {
 		// recalculate the positions for the query boxes if set
 		for (PCAxis axis : axisList) {
-			if (axis.column.isQuerySet()) {
-				float normValue = (axis.column.getMaxQueryValue() - axis.column
-						.getMinValue())
-						/ (axis.column.getMaxValue() - axis.column
-								.getMinValue());
-				axis.queryMaxPosition = axis.bottomPosition
-						- (int) (normValue * axis.axisHeight);
-
-				normValue = (axis.column.getMinQueryValue() - axis.column
-						.getMinValue())
-						/ (axis.column.getMaxValue() - axis.column
-								.getMinValue());
-				axis.queryMinPosition = axis.bottomPosition
-						- (int) (normValue * axis.axisHeight);
+			if (dataModel.getActiveQuery() != null && dataModel.getActiveQuery().hasColumnSelections()) {
+//			if (axis.column.isQuerySet()) {
+//				float normValue = (axis.column.getMaxQueryValue() - axis.column
+//						.getMinValue())
+//						/ (axis.column.getMaxValue() - axis.column
+//								.getMinValue());
+//				axis.queryMaxPosition = axis.bottomPosition
+//						- (int) (normValue * axis.axisHeight);
+//
+//				normValue = (axis.column.getMinQueryValue() - axis.column
+//						.getMinValue())
+//						/ (axis.column.getMaxValue() - axis.column
+//								.getMinValue());
+//				axis.queryMinPosition = axis.bottomPosition
+//						- (int) (normValue * axis.axisHeight);
 			}
 		}
 	}
@@ -1583,11 +1583,9 @@ public class PCPanel extends JComponent implements ActionListener,
 
 			float corrCoefficient;
 			if (useQueryCorrelations) {
-				corrCoefficient = axis.column.getQueryCorrelationCoefficients()
-						.get(compareColumnIndex);
+				corrCoefficient = dataModel.getActiveQuery().getColumnQuerySummaryStats(axis.column).getCorrelationCoefficients().get(compareColumnIndex);
 			} else {
-				corrCoefficient = axis.column.getCorrelationCoefficients().get(
-						compareColumnIndex);
+				corrCoefficient = axis.column.getSummaryStats().getCorrelationCoefficients().get(compareColumnIndex);
 			}
 
 			ColumnSortRecord columnRecord = new ColumnSortRecord(axis.column,
@@ -1681,91 +1679,88 @@ public class PCPanel extends JComponent implements ActionListener,
 	}
 
 	public void arrangeColumnsByTypicalDifference() {
-		if (!dataModel.isColumnQuerySet()) {
-			return;
-		}
+		if (dataModel.getActiveQuery() != null && dataModel.getActiveQuery().hasColumnSelections()) {
+			ArrayList<PCAxis> newAxisList = new ArrayList<PCAxis>();
 
-		ArrayList<PCAxis> newAxisList = new ArrayList<PCAxis>();
+			ArrayList<ColumnSortRecord> sortList = new ArrayList<ColumnSortRecord>();
+			for (int i = 0; i < axisList.size(); i++) {
+				PCAxis axis = axisList.get(i);
 
-		ArrayList<ColumnSortRecord> sortList = new ArrayList<ColumnSortRecord>();
-		for (int i = 0; i < axisList.size(); i++) {
-			PCAxis axis = axisList.get(i);
-
-			float typicalDiff = Float.NaN;
-			if (this.getDispersionDisplayMode() == PCPanel.MEAN_DISPERSION_BOX_MODE) {
-				typicalDiff = axis.meanPosition - axis.queryMeanPosition;
-			} else if (getDispersionDisplayMode() == MEDIAN_DISPERSION_BOX_MODE) {
-				typicalDiff = axis.medianPosition - axis.queryMedianPosition;
+				float typicalDiff = Float.NaN;
+				if (this.getDispersionDisplayMode() == PCPanel.MEAN_DISPERSION_BOX_MODE) {
+					typicalDiff = axis.meanPosition - axis.queryMeanPosition;
+				} else if (getDispersionDisplayMode() == MEDIAN_DISPERSION_BOX_MODE) {
+					typicalDiff = axis.medianPosition - axis.queryMedianPosition;
+				}
+				if (!Float.isNaN(typicalDiff)) {
+					sortList.add(new ColumnSortRecord(axis.column, typicalDiff));
+				} else {
+					sortList.add(new ColumnSortRecord(axis.column, Float.MAX_VALUE));
+				}
 			}
-			if (!Float.isNaN(typicalDiff)) {
-				sortList.add(new ColumnSortRecord(axis.column, typicalDiff));
-			} else {
-				sortList.add(new ColumnSortRecord(axis.column, Float.MAX_VALUE));
+
+			Object sortedRecords[] = sortList.toArray();
+			Arrays.sort(sortedRecords);
+
+			for (int i = 0; i < sortedRecords.length; i++) {
+				ColumnSortRecord sortRecord = (ColumnSortRecord) sortedRecords[i];
+				newAxisList.add(new PCAxis(sortRecord.column, dataModel
+						.getColumnIndex(sortRecord.column)));
 			}
+
+			axisList = newAxisList;
+
+			layoutAxes();
+			recalculatePolylines();
+			startAxesImageRenderer();
+			startContextLineRenderer();
+			startFocusLineRenderer();
+			startScatterplotRenderers();
 		}
-
-		Object sortedRecords[] = sortList.toArray();
-		Arrays.sort(sortedRecords);
-
-		for (int i = 0; i < sortedRecords.length; i++) {
-			ColumnSortRecord sortRecord = (ColumnSortRecord) sortedRecords[i];
-			newAxisList.add(new PCAxis(sortRecord.column, dataModel
-					.getColumnIndex(sortRecord.column)));
-		}
-
-		axisList = newAxisList;
-
-		layoutAxes();
-		recalculatePolylines();
-		startAxesImageRenderer();
-		startContextLineRenderer();
-		startFocusLineRenderer();
-		startScatterplotRenderers();
 	}
 
 	public void arrangeColumnsByDispersionDifference() {
-		if (!dataModel.isColumnQuerySet()) {
-			return;
-		}
-
-		ArrayList<PCAxis> newAxisList = new ArrayList<PCAxis>();
-
-		ArrayList<ColumnSortRecord> sortList = new ArrayList<ColumnSortRecord>();
-		for (int i = 0; i < axisList.size(); i++) {
-			PCAxis axis = axisList.get(i);
-
-			float dispersionDiff = Float.NaN;
-			if (this.getDispersionDisplayMode() == PCPanel.MEAN_DISPERSION_BOX_MODE) {
-				dispersionDiff = axis.standardDeviationRangeRectangle.height
-						- axis.queryStandardDeviationRangeRectangle.height;
-			} else if (getDispersionDisplayMode() == MEDIAN_DISPERSION_BOX_MODE) {
-				dispersionDiff = axis.IQRBoxRectangle.height
-						- axis.QueryIQRBoxRectangle.height;
+		if (dataModel.getActiveQuery() != null && dataModel.getActiveQuery().hasColumnSelections()) {
+	
+			ArrayList<PCAxis> newAxisList = new ArrayList<PCAxis>();
+	
+			ArrayList<ColumnSortRecord> sortList = new ArrayList<ColumnSortRecord>();
+			for (int i = 0; i < axisList.size(); i++) {
+				PCAxis axis = axisList.get(i);
+	
+				float dispersionDiff = Float.NaN;
+				if (this.getDispersionDisplayMode() == PCPanel.MEAN_DISPERSION_BOX_MODE) {
+					dispersionDiff = axis.standardDeviationRangeRectangle.height
+							- axis.queryStandardDeviationRangeRectangle.height;
+				} else if (getDispersionDisplayMode() == MEDIAN_DISPERSION_BOX_MODE) {
+					dispersionDiff = axis.IQRBoxRectangle.height
+							- axis.QueryIQRBoxRectangle.height;
+				}
+				if (!Float.isNaN(dispersionDiff)) {
+					sortList.add(new ColumnSortRecord(axis.column, dispersionDiff));
+				} else {
+					sortList.add(new ColumnSortRecord(axis.column, Float.MAX_VALUE));
+				}
 			}
-			if (!Float.isNaN(dispersionDiff)) {
-				sortList.add(new ColumnSortRecord(axis.column, dispersionDiff));
-			} else {
-				sortList.add(new ColumnSortRecord(axis.column, Float.MAX_VALUE));
+	
+			Object sortedRecords[] = sortList.toArray();
+			Arrays.sort(sortedRecords);
+	
+			for (int i = 0; i < sortedRecords.length; i++) {
+				ColumnSortRecord sortRecord = (ColumnSortRecord) sortedRecords[i];
+				newAxisList.add(new PCAxis(sortRecord.column, dataModel
+						.getColumnIndex(sortRecord.column)));
 			}
+	
+			axisList = newAxisList;
+	
+			layoutAxes();
+			recalculatePolylines();
+			startAxesImageRenderer();
+			startContextLineRenderer();
+			startFocusLineRenderer();
+			startScatterplotRenderers();
 		}
-
-		Object sortedRecords[] = sortList.toArray();
-		Arrays.sort(sortedRecords);
-
-		for (int i = 0; i < sortedRecords.length; i++) {
-			ColumnSortRecord sortRecord = (ColumnSortRecord) sortedRecords[i];
-			newAxisList.add(new PCAxis(sortRecord.column, dataModel
-					.getColumnIndex(sortRecord.column)));
-		}
-
-		axisList = newAxisList;
-
-		layoutAxes();
-		recalculatePolylines();
-		startAxesImageRenderer();
-		startContextLineRenderer();
-		startFocusLineRenderer();
-		startScatterplotRenderers();
 	}
 
 	public void arrangeColumnsByDispersion(boolean useQueryLines) {

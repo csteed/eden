@@ -1,5 +1,10 @@
 package gov.ornl.eden;
 
+import gov.ornl.datatable.Column;
+import gov.ornl.datatable.DataModel;
+import gov.ornl.datatable.DataModelListener;
+import gov.ornl.datatable.Tuple;
+
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
@@ -154,12 +159,11 @@ public class CorrelationMatrixPanel extends JPanel implements
 			Column column = matrixColumns.get(highlightedRow);
 			float corrCoef;
 
-			if (this.useQueryCorrelations) {
-				corrCoef = column.getQueryCorrelationCoefficients().get(
-						highlightedCol);
+			if (this.useQueryCorrelations && (dataModel.getActiveQuery().getColumnQuerySummaryStats(column) != null)) {
+				corrCoef = dataModel.getActiveQuery().getColumnQuerySummaryStats(column).getCorrelationCoefficients().get(highlightedCol);
+//				corrCoef = column.getQueryCorrelationCoefficients().get(highlightedCol);
 			} else {
-				corrCoef = column.getCorrelationCoefficients().get(
-						highlightedCol);
+				corrCoef = column.getSummaryStats().getCorrelationCoefficients().get(highlightedCol);
 			}
 
 			// String labelStr = dataModel.getColumn(highlightedCol).getName() +
@@ -220,8 +224,7 @@ public class CorrelationMatrixPanel extends JPanel implements
 			matrixRenderer.isRunning = false;
 			matrixRenderer.removeRendererListener(this);
 		}
-		matrixRenderer = new MatrixRenderer(cellSize, matrixRect,
-				this.useQueryCorrelations, matrixColumns);
+		matrixRenderer = new MatrixRenderer(dataModel, cellSize, matrixRect,this.useQueryCorrelations, matrixColumns);
 		matrixRenderer.addRendererListener(this);
 		matrixRenderer.start();
 	}

@@ -1,5 +1,9 @@
 package gov.ornl.eden;
 
+import gov.ornl.datatable.Column;
+import gov.ornl.datatable.DataModel;
+import gov.ornl.datatable.Tuple;
+
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics2D;
@@ -128,37 +132,13 @@ public class ScatterplotPointsRenderer extends Renderer {
 				ex.printStackTrace();
 				continue;
 			}
-			// double normValue = (xValue - xColumn.getMinValue()) /
-			// (xColumn.getMaxValue() - xColumn.getMinValue());
-			// int x = x0 + (int)(normValue * plotAreaSize);
-			int x = toScreenX(xValue, xColumn.getMinValue(),
-					xColumn.getMaxValue(), left, size);
-			// int x = toScreenX2(xValue, xColumn.getMinValue(),
-			// xColumn.getMaxValue(), size);
+
+			int x = toScreenX(xValue, xColumn.getSummaryStats().getMin(), xColumn.getSummaryStats().getMax(), left, size);
 			float yValue = currentTuple.getElement(yColumnIndex);
-			// normValue = (yValue - yColumn.getMinValue()) /
-			// (yColumn.getMaxValue() - yColumn.getMinValue());
-			// int y = y0 - (int)(normValue * plotAreaSize);
-			int y = toScreenY(yValue, yColumn.getMinValue(),
-					yColumn.getMaxValue(), top, size);
-			// int y = toScreenY2(yValue, yColumn.getMinValue(),
-			// yColumn.getMaxValue(), size);
+			int y = toScreenY(yValue, yColumn.getSummaryStats().getMin(), yColumn.getSummaryStats().getMax(), top, size);
+			int offsetX = x - (int) (config.pointShape.getBounds2D().getWidth() / 2.);
+			int offsetY = y - (int) (config.pointShape.getBounds2D().getWidth() / 2.);
 
-			// log.debug("x="+x +" y="+y+" x>size="+ (x>size) + " y<0" + (y<0));
-
-			// if (y<0) {
-			// log.debug("x="+x +" y="+y+" size="+size+
-			// " left="+left+" bottom="+bottom+" right="+right+" top="+top);
-			// int test = toScreenY2(yValue, yColumn.getMinValue(),
-			// yColumn.getMaxValue(), size);
-			// }
-
-			int offsetX = x
-					- (int) (config.pointShape.getBounds2D().getWidth() / 2.);
-			int offsetY = y
-					- (int) (config.pointShape.getBounds2D().getWidth() / 2.);
-
-			// log.debug("x=" + offsetX + " y="+offsetY);
 			g2.translate(offsetX, offsetY);
 			g2.draw(config.pointShape);
 			g2.translate(-offsetX, -offsetY);
@@ -170,58 +150,25 @@ public class ScatterplotPointsRenderer extends Renderer {
 				return;
 			}
 
-			double startX = xColumn.getMinValue();
+			double startX = xColumn.getSummaryStats().getMin();
 			double startY = simpleRegression.predict(startX);
-			double endX = xColumn.getMaxValue();
+			double endX = xColumn.getSummaryStats().getMax();
 			double endY = simpleRegression.predict(endX);
 
-			if (endY < yColumn.getMinValue()) {
-				double test = -(simpleRegression.getIntercept() / simpleRegression
-						.getSlope());
-			}
-
-			int start_ix = toScreenX((float) startX, xColumn.getMinValue(),
-					xColumn.getMaxValue(), left, size);
-			int start_iy = toScreenY((float) startY, yColumn.getMinValue(),
-					yColumn.getMaxValue(), top, size);
-			int end_ix = toScreenX((float) endX, xColumn.getMinValue(),
-					xColumn.getMaxValue(), left, size);
-			int end_iy = toScreenY((float) endY, yColumn.getMinValue(),
-					yColumn.getMaxValue(), top, size);
+			int start_ix = toScreenX((float) startX, xColumn.getSummaryStats().getMin(), xColumn.getSummaryStats().getMax(), left, size);
+			int start_iy = toScreenY((float) startY, yColumn.getSummaryStats().getMin(), yColumn.getSummaryStats().getMax(), top, size);
+			int end_ix = toScreenX((float) endX, xColumn.getSummaryStats().getMin(), xColumn.getSummaryStats().getMax(), left, size);
+			int end_iy = toScreenY((float) endY, yColumn.getSummaryStats().getMin(), yColumn.getSummaryStats().getMax(), top, size);
 
 			g2.setColor(Color.black);
 			g2.drawLine(start_ix, start_iy, end_ix, end_iy);
-
-			// g2.drawLine(start_ix, start_iy, start_ix, start_iy);
-			// g2.drawLine(start_ix, start_iy, start_ix, start_iy);
-			// log.debug("Drawing line from ("+start_ix+","+start_iy+") to ("+end_ix+","+end_iy+")");
-			// log.debug("Scatterplot x0="+x0+" y0="+y0+
-			// " x1="+(x0+plotAreaSize)+" y1="+(y0+plotAreaSize));
-
 		}
 
 		isRunning = false;
 		fireRendererFinished();
 	}
 
-	private int toScreenY2(float value, float minValue, float maxValue,
-			int plotHeight) {
-		float normVal = 1.f - ((value - minValue) / (maxValue - minValue));
-		int y = (int) Math.round(normVal * plotHeight);
-		return y;
-	}
-
-	private int toScreenX2(float value, float minValue, float maxValue,
-			int plotWidth) {
-		float normVal = (value - minValue) / (maxValue - minValue);
-		int x = (int) (normVal * plotWidth);
-		return x;
-	}
-
-	private int toScreenY(float value, float minValue, float maxValue,
-			int offset, int plotHeight) {
-		// float normVal = (value - minValue) / (maxValue - minValue);
-		// int y = offset - (int)(normVal * plotHeight);
+	private int toScreenY(float value, float minValue, float maxValue, int offset, int plotHeight) {
 		float normVal = 1.f - ((value - minValue) / (maxValue - minValue));
 		int y = offset + (int) (normVal * plotHeight);
 		return y;
@@ -233,73 +180,4 @@ public class ScatterplotPointsRenderer extends Renderer {
 		int x = offset + (int) Math.round(normVal * plotWidth);
 		return x;
 	}
-
-	/*
-	 * public void run() { isRunning = true;
-	 * 
-	 * int xColumnIndex = dataModel.getColumnIndex(xColumn); int yColumnIndex =
-	 * dataModel.getColumnIndex(yColumn);
-	 * 
-	 * image = new BufferedImage(size, size, BufferedImage.TYPE_INT_ARGB);
-	 * Graphics2D g2 = (Graphics2D) image.getGraphics();
-	 * g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
-	 * RenderingHints.VALUE_ANTIALIAS_ON); //
-	 * g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING,
-	 * RenderingHints.VALUE_TEXT_ANTIALIAS_ON); g2.setFont(AXIS_LABEL_FONT); //
-	 * g2.setColor(Color.DARK_GRAY);
-	 * 
-	 * // Adjust lower left point by axes gutters, border, and shape size int x0
-	 * = BUFFER_SIZE + g2.getFontMetrics().getHeight() +
-	 * (int)(config.pointShape.getBounds2D().getWidth()/2); int y0 = size -
-	 * BUFFER_SIZE - g2.getFontMetrics().getHeight() -
-	 * (int)(config.pointShape.getBounds2D().getHeight()/2); // int x1 = size -
-	 * BUFFER_SIZE; // int y1 = BUFFER_SIZE; // int maxShapeDimension =
-	 * (int)Math.max(config.pointShape.getBounds2D().getWidth(),
-	 * config.pointShape.getBounds2D().getHeight()); int actualPlotSize = size -
-	 * ((BUFFER_SIZE*2) + g2.getFontMetrics().getHeight() + maxShapeDimension);
-	 * 
-	 * // g2.drawLine(x0, y0, x0, y1); // g2.drawLine(x0, y0, x1, y0);
-	 * 
-	 * // Arrow Drawing Code Below // Polygon p = new Polygon(); //
-	 * p.addPoint(x1, y0); // p.addPoint(x1-ARROW_HEIGHT-1, y0-ARROW_WIDTH/2);
-	 * // p.addPoint(x1-ARROW_HEIGHT-1, y0+ARROW_WIDTH/2); // g2.fill(p); //
-	 * g2.draw(p); // // p = new Polygon(); // p.addPoint(x0, y1); //
-	 * p.addPoint(x0-ARROW_WIDTH/2, y1+ARROW_HEIGHT+1); //
-	 * p.addPoint(x0+ARROW_WIDTH/2, y1+ARROW_HEIGHT+1); // g2.fill(p); //
-	 * g2.draw(p);
-	 * 
-	 * // Axis Label Drawing // String yAxisString = yColumn.getName(); //
-	 * String xAxisString = xColumn.getName(); // int stringWidth =
-	 * g2.getFontMetrics().stringWidth(yAxisString); // int yAxisCenter = y1 +
-	 * ((y0 - y1) / 2); // int xAxisCenter = x0 + ((x1 - x0) / 2); //
-	 * g2.rotate(-NINETY_DEGREES, x0-(g2.getFontMetrics().getHeight()/2),
-	 * yAxisCenter+(stringWidth/2)); // g2.drawString(yAxisString,
-	 * x0-(g2.getFontMetrics().getHeight()/2), yAxisCenter+(stringWidth/2)); //
-	 * g2.rotate(NINETY_DEGREES, x0-(g2.getFontMetrics().getHeight()/2),
-	 * yAxisCenter+(stringWidth/2)); // stringWidth =
-	 * g2.getFontMetrics().stringWidth(xAxisString); //
-	 * g2.drawString(xAxisString, xAxisCenter-(stringWidth/2), y0 +
-	 * g2.getFontMetrics().getHeight()); // g2.setStroke(new BasicStroke(2.f));
-	 * // draw points for (int ituple = 0; ituple < dataModel.getTupleCount();
-	 * ituple++) { Tuple currentTuple = dataModel.getTuple(ituple);
-	 * 
-	 * if (!currentTuple.getQueryFlag()) { continue; }
-	 * 
-	 * float xValue = currentTuple.getElement(xColumnIndex); double normValue =
-	 * (xValue - xColumn.getMinValue()) / (xColumn.getMaxValue() -
-	 * xColumn.getMinValue()); int x = x0 + (int)(normValue * actualPlotSize);
-	 * float yValue = currentTuple.getElement(yColumnIndex); normValue = (yValue
-	 * - yColumn.getMinValue()) / (yColumn.getMaxValue() -
-	 * yColumn.getMinValue()); int y = y0 - (int)(normValue * actualPlotSize);
-	 * 
-	 * g2.setColor(FocusLineRenderer.LINE_COLOR);
-	 * 
-	 * int offsetX = x - (int)(config.pointShape.getBounds2D().getWidth() / 2.);
-	 * int offsetY = y - (int)(config.pointShape.getBounds2D().getWidth() / 2.);
-	 * 
-	 * g2.translate(offsetX, offsetY); g2.draw(config.pointShape);
-	 * g2.translate(-offsetX, -offsetY); }
-	 * 
-	 * isRunning = false; fireRendererFinished(); }
-	 */
 }

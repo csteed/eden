@@ -1,5 +1,10 @@
 package gov.ornl.eden;
 
+import gov.ornl.datatable.Column;
+import gov.ornl.datatable.DataModel;
+import gov.ornl.datatable.DataModelListener;
+import gov.ornl.datatable.Tuple;
+
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Cursor;
@@ -405,16 +410,17 @@ public class ScatterPlotPanel extends JPanel implements MouseMotionListener,
 	@Override
 	public void mouseClicked(MouseEvent event) {
 		if (SwingUtilities.isLeftMouseButton(event)) {
-			if (xColumn.isQuerySet()) {
-				xColumn.setQueryFlag(false);
-				xColumn.setMaxQueryValue(xColumn.getMaxValue());
-				xColumn.setMinQueryValue(xColumn.getMinValue());
-			}
-			if (yColumn.isQuerySet()) {
-				yColumn.setQueryFlag(false);
-				yColumn.setMaxQueryValue(yColumn.getMaxValue());
-				yColumn.setMinQueryValue(yColumn.getMinValue());
-			}
+			// TODO: Reenable mouse selections
+//			if (xColumn.isQuerySet()) {
+//				xColumn.setQueryFlag(false);
+//				xColumn.setMaxQueryValue(xColumn.getMaxValue());
+//				xColumn.setMinQueryValue(xColumn.getMinValue());
+//			}
+//			if (yColumn.isQuerySet()) {
+//				yColumn.setQueryFlag(false);
+//				yColumn.setMaxQueryValue(yColumn.getMaxValue());
+//				yColumn.setMinQueryValue(yColumn.getMinValue());
+//			}
 			dataModel.setQueriedTuples();
 			dragRect = null;
 			startScatterplotRenderer();
@@ -452,32 +458,28 @@ public class ScatterPlotPanel extends JPanel implements MouseMotionListener,
 	}
 
 	private float XPositionToValue(int x) {
-		float normVal = (float) (x - plotRectangle.x)
-				/ (float) (plotRectangle.width);
-		float val = xColumn.getMinValue()
-				+ (normVal * (xColumn.getMaxValue() - xColumn.getMinValue()));
+		float normVal = (float) (x - plotRectangle.x) / (float) (plotRectangle.width);
+		float val = xColumn.getSummaryStats().getMin() + (normVal * (xColumn.getSummaryStats().getMax() - xColumn.getSummaryStats().getMin()));
 		return val;
 	}
 
 	private float YPositionToValue(int y) {
-		float normVal = (float) (y - plotRectangle.y)
-				/ (float) (plotRectangle.height);
-		float val = yColumn.getMaxValue()
-				- (normVal * (yColumn.getMaxValue() - yColumn.getMinValue()));
+		float normVal = (float) (y - plotRectangle.y) / (float) (plotRectangle.height);
+		float val = yColumn.getSummaryStats().getMax() - (normVal * (yColumn.getSummaryStats().getMax() - yColumn.getSummaryStats().getMin()));
 		return val;
 	}
 
 	private void updateQueryPoints() {
-		xColumn.setMinQueryValue(XPositionToValue(dragRect.x));
-		xColumn.setMaxQueryValue(XPositionToValue(dragRect.x + dragRect.width));
-		xColumn.setQueryFlag(true);
-		yColumn.setMaxQueryValue(YPositionToValue(dragRect.y));
-		yColumn.setMinQueryValue(YPositionToValue(dragRect.y + dragRect.height));
-		yColumn.setQueryFlag(true);
-		log.debug("query updated xmax=" + xColumn.getMaxQueryValue() + " xmin="
-				+ xColumn.getMinQueryValue() + " ymax="
-				+ yColumn.getMaxQueryValue() + " ymin="
-				+ yColumn.getMinQueryValue());
+//		xColumn.setMinQueryValue(XPositionToValue(dragRect.x));
+//		xColumn.setMaxQueryValue(XPositionToValue(dragRect.x + dragRect.width));
+//		xColumn.setQueryFlag(true);
+//		yColumn.setMaxQueryValue(YPositionToValue(dragRect.y));
+//		yColumn.setMinQueryValue(YPositionToValue(dragRect.y + dragRect.height));
+//		yColumn.setQueryFlag(true);
+//		log.debug("query updated xmax=" + xColumn.getMaxQueryValue() + " xmin="
+//				+ xColumn.getMinQueryValue() + " ymax="
+//				+ yColumn.getMaxQueryValue() + " ymin="
+//				+ yColumn.getMinQueryValue());
 		dataModel.setQueriedTuples();
 		startScatterplotRenderer();
 	}

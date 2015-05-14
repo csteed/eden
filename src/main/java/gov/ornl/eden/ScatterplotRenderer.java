@@ -1,5 +1,8 @@
 package gov.ornl.eden;
 
+import gov.ornl.datatable.Column;
+import gov.ornl.datatable.DataModel;
+
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
@@ -73,10 +76,8 @@ public abstract class ScatterplotRenderer extends Renderer {
 		// g2.getFontMetrics().getHeight(),
 		// g2.getFontMetrics().getHeight());
 
-		float corrCoef = xColumn.getCorrelationCoefficients().get(
-				dataModel.getColumnIndex(yColumn));
-		correlationColor = Utilities.getColorForCorrelationCoefficient(
-				corrCoef, 1.);
+		float corrCoef = xColumn.getSummaryStats().getCorrelationCoefficients().get(dataModel.getColumnIndex(yColumn));
+		correlationColor = Utilities.getColorForCorrelationCoefficient(corrCoef, 1.);
 
 	}
 

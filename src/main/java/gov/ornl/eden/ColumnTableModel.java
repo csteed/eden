@@ -1,11 +1,15 @@
 package gov.ornl.eden;
 
+import gov.ornl.datatable.Column;
+import gov.ornl.datatable.DataModel;
+import gov.ornl.datatable.DataModelListener;
+import gov.ornl.datatable.Tuple;
+
 import java.util.ArrayList;
 
 import javax.swing.table.AbstractTableModel;
 
-public class ColumnTableModel extends AbstractTableModel implements
-		DataModelListener {
+public class ColumnTableModel extends AbstractTableModel implements DataModelListener {
 
 	private static final long serialVersionUID = 1L;
 	private DataModel dataModel;
@@ -90,25 +94,25 @@ public class ColumnTableModel extends AbstractTableModel implements
 			} else if (col == 1) {
 				String newName = (String) value;
 				dataModel.setColumnName(column, newName);
-			} else if (col == 13) {
-				// set the minimum query value
-				float floatValue = ((Float) value).floatValue();
-				if (floatValue <= column.getMaxValue()
-						&& floatValue >= column.getMinValue()
-						&& floatValue <= column.getMaxQueryValue()) {
-					column.setMinQueryValue(floatValue);
-					dataModel.setQueriedTuples();
-					// dataModel.fireQueryChanged();
-				}
-			} else if (col == 14) {
-				float floatValue = ((Float) value).floatValue();
-				if (floatValue <= column.getMaxValue()
-						&& floatValue >= column.getMinValue()
-						&& floatValue >= column.getMinQueryValue()) {
-					column.setMaxQueryValue(floatValue);
-					dataModel.setQueriedTuples();
-					// dataModel.fireQueryChanged();
-				}
+//			} else if (col == 13) {
+//				// set the minimum query value
+//				float floatValue = ((Float) value).floatValue();
+//				if (floatValue <= column.getMaxValue()
+//						&& floatValue >= column.getMinValue()
+//						&& floatValue <= column.getMaxQueryValue()) {
+//					column.setMinQueryValue(floatValue);
+//					dataModel.setQueriedTuples();
+//					// dataModel.fireQueryChanged();
+//				}
+//			} else if (col == 14) {
+//				float floatValue = ((Float) value).floatValue();
+//				if (floatValue <= column.getMaxValue()
+//						&& floatValue >= column.getMinValue()
+//						&& floatValue >= column.getMinQueryValue()) {
+//					column.setMaxQueryValue(floatValue);
+//					dataModel.setQueriedTuples();
+//					// dataModel.fireQueryChanged();
+//				}
 			}
 		}
 	}
@@ -129,94 +133,70 @@ public class ColumnTableModel extends AbstractTableModel implements
 				return column.getName();
 			} else if (col == 2) {
 				if (showQueryStatistics) {
-					return column.getQueryMean();
+					// TODO: Add query statistics display
+//					return column.getQueryMean();
 				} else {
-					return column.getMean();
+					return column.getSummaryStats().getMean();
 				}
 			} else if (col == 3) {
 				if (showQueryStatistics) {
-					return column.getQueryMedian();
+//					return column.getQueryMedian();
 				} else {
-					return column.getMedian();
+					return column.getSummaryStats().getMedian();
 				}
 			} else if (col == 4) {
 				if (showQueryStatistics) {
-					return column.getQueryStandardDeviation();
+//					return column.getQueryStandardDeviation();
 				} else {
-					return column.getStandardDeviation();
+					return column.getSummaryStats().getStandardDeviation();
 				}
 			} else if (col == 5) {
 				if (showQueryStatistics) {
-					return column.getQueryVariance();
+//					return column.getQueryVariance();
 				} else {
-					return column.getVariance();
+					return column.getSummaryStats().getVariance();
 				}
 			} else if (col == 6) {
 				if (showQueryStatistics) {
-					return column.getQueryQ1();
+//					return column.getQueryQ1();
 				} else {
-					return column.getQ1();
+					return column.getSummaryStats().getQuantile1();
 				}
 			} else if (col == 7) {
 				if (showQueryStatistics) {
-					return column.getQueryQ3();
+//					return column.getQueryQ3();
 				} else {
-					return column.getQ3();
+					return column.getSummaryStats().getQuantile3();
 				}
 			} else if (col == 8) {
 				if (showQueryStatistics) {
-					return column.getQueryIQR();
+//					return column.getQueryIQR();
 				} else {
-					return column.getIQR();
+					return column.getSummaryStats().getIQR();
 				}
 			} else if (col == 9) {
 				if (showQueryStatistics) {
-					return column.getQuerySkewness();
+//					return column.getQuerySkewness();
 				} else {
-					return column.getSkewness();
+					return column.getSummaryStats().getSkewness();
 				}
 			} else if (col == 10) {
 				if (showQueryStatistics) {
-					return column.getQueryKurtosis();
+//					return column.getQueryKurtosis();
 				} else {
-					return column.getKurtosis();
+					return column.getSummaryStats().getKurtosis();
 				}
 			} else if (col == 11) {
 				if (showQueryStatistics) {
-					return column.getQueryMinValue();
+//					return column.getQueryMinValue();
 				} else {
-					return column.getMinValue();
+					return column.getSummaryStats().getMin();
 				}
 			} else if (col == 12) {
 				if (showQueryStatistics) {
-					return column.getQueryMaxValue();
+//					return column.getQueryMaxValue();
 				} else {
-					return column.getMaxValue();
-				}
-			} else if (col == 13) {
-				return column.getMinQueryValue();
-			} else if (col == 14) {
-				return column.getMaxQueryValue();
-			} else if (col == 15) {
-				if (dataModel.getOLSMultipleLinearRegression() != null) {
-					if (row == dataModel.getColumnIndex(dataModel
-							.getOLSMultipleLinearRegressionDependentColumn())) {
-						return dataModel.getOLSMultipleLinearRegression()
-								.calculateRSquared();
-					}
-				}
-			} else if (col == 16) {
-				if (dataModel.getOLSMultipleLinearRegression() != null) {
-					if (row == dataModel.getColumnIndex(dataModel
-							.getOLSMultipleLinearRegressionDependentColumn())) {
-						return dataModel.getOLSMultipleLinearRegression()
-								.calculateAdjustedRSquared();
-					}
-				}
-			} else if (col == 17) {
-				if (dataModel.getOLSMultipleLinearRegression() != null) {
-					return dataModel.getOLSMultipleLinearRegression()
-							.estimateRegressionParameters()[row];
+					return column.getSummaryStats().getMax();
 				}
 			}
 		}

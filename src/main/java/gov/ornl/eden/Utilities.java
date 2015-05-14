@@ -1,5 +1,9 @@
 package gov.ornl.eden;
 
+import gov.ornl.datatable.Column;
+import gov.ornl.datatable.DataModel;
+import gov.ornl.datatable.Tuple;
+
 import java.awt.Color;
 import java.io.BufferedReader;
 import java.io.File;
@@ -460,8 +464,8 @@ public class Utilities {
 		StringTokenizer st = new StringTokenizer(line);
 		while (st.hasMoreTokens()) {
 			String token = st.nextToken(",");
-			Column column = new Column();
-			column.setName(token.trim());
+			Column column = new Column(token.trim());
+//			column.setName(token.trim());
 			columns.add(column);
 			tokenCounter++;
 		}
@@ -528,8 +532,8 @@ public class Utilities {
 				StringTokenizer st = new StringTokenizer(line);
 				while (st.hasMoreTokens()) {
 					String token = st.nextToken(",");
-					Column column = new Column();
-					column.setName(token.trim());
+					Column column = new Column(token.trim());
+//					column.setName(token.trim());
 					columns.add(column);
 					token_counter++;
 				}

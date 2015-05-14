@@ -1,5 +1,8 @@
 package gov.ornl.eden;
 
+import gov.ornl.datatable.Column;
+import gov.ornl.datatable.DataModel;
+
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
@@ -75,29 +78,24 @@ public class ScatterplotAxesRenderer extends Renderer {
 		plot_top = top;
 		plot_bottom = plotSize - axisSize + 1;
 
-		// log.debug("left="+left + " right="+right+
-		// " bottom="+bottom+" top="+top);
-		// log.debug("plot_left="+plot_left + " plot_right="+plot_right+
-		// " plot_bottom="+plot_bottom+" plot_top="+plot_top);
-
 		tickSize = axisSize / 2;
 
 		correlationRect = new Rectangle(left - 1, plot_bottom + 2, axisSize,
 				axisSize);
 
-		float corrCoef;
-		if (config.useQueryCorrelationCoefficient
-				&& dataModel.isColumnQuerySet()) {
-			corrCoef = xColumn.getQueryCorrelationCoefficients().get(
-					dataModel.getColumnIndex(yColumn));
-		} else {
-			corrCoef = xColumn.getCorrelationCoefficients().get(
-					dataModel.getColumnIndex(yColumn));
-		}
+		// TODO: Make code pull real correlation coefficient from Data Model
+		float corrCoef = 0.5f;
+//		if (config.useQueryCorrelationCoefficient
+//				&& dataModel.isColumnQuerySet()) {
+//			corrCoef = xColumn.getQueryCorrelationCoefficients().get(
+//					dataModel.getColumnIndex(yColumn));
+//		} else {
+//			corrCoef = xColumn.getCorrelationCoefficients().get(
+//					dataModel.getColumnIndex(yColumn));
+//		}
 		// float corrCoef =
 		// xColumn.getCorrelationCoefficients().get(dataModel.getColumnIndex(yColumn));
-		correlationColor = Utilities.getColorForCorrelationCoefficient(
-				corrCoef, 1.);
+		correlationColor = Utilities.getColorForCorrelationCoefficient(corrCoef, 1.);
 	}
 
 	public Column getXColumn() {
@@ -173,27 +171,27 @@ public class ScatterplotAxesRenderer extends Renderer {
 
 		if (config.showAxisLabels) {
 			// Y Axis min and max labeling
-			String valueString = DECIMAL_FORMAT.format(yColumn.getMaxValue());
+			String valueString = DECIMAL_FORMAT.format(yColumn.getSummaryStats().getMax());
 			int stringWidth = g2.getFontMetrics().stringWidth(valueString);
 			g2.drawString(valueString, plot_left - stringWidth
 					- (g2.getFontMetrics().getHeight() / 2), plot_top
 					+ g2.getFontMetrics().getHeight());
-			valueString = DECIMAL_FORMAT.format(yColumn.getMinValue());
+			valueString = DECIMAL_FORMAT.format(yColumn.getSummaryStats().getMin());
 			stringWidth = g2.getFontMetrics().stringWidth(valueString);
 			g2.drawString(valueString, plot_left - stringWidth
 					- (g2.getFontMetrics().getHeight() / 2), plot_bottom - 3);
 
 			// X Axis min and max labeling
-			valueString = DECIMAL_FORMAT.format(xColumn.getMinValue());
+			valueString = DECIMAL_FORMAT.format(xColumn.getSummaryStats().getMin());
 			stringWidth = g2.getFontMetrics().stringWidth(valueString);
 			g2.drawString(valueString, plot_left + 3, plot_bottom
 					+ g2.getFontMetrics().getHeight());
-			valueString = DECIMAL_FORMAT.format(xColumn.getMaxValue());
+			valueString = DECIMAL_FORMAT.format(xColumn.getSummaryStats().getMax());
 			stringWidth = g2.getFontMetrics().stringWidth(valueString);
 			g2.drawString(valueString, plot_right - stringWidth - 3,
 					plot_bottom + g2.getFontMetrics().getHeight());
 		}
-
+		
 		isRunning = false;
 		fireRendererFinished();
 	}

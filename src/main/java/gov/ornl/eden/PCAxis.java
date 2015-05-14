@@ -1,6 +1,9 @@
 package gov.ornl.eden;
 
+import gov.ornl.datatable.Column;
+
 import java.awt.Rectangle;
+import java.util.ArrayList;
 
 public class PCAxis {
 	public Column column;
@@ -37,8 +40,10 @@ public class PCAxis {
 	public Rectangle frequencyDisplayRectangle;
 
 	public int maxPosition, minPosition;
-	public int queryMaxPosition, queryMinPosition;
+//	public int queryMaxPosition, queryMinPosition;
 
+	public ArrayList<PCAxisSelection> axisSelectionList = new ArrayList<PCAxisSelection>();
+	
 	public int scatterplot_x0;
 	public int scatterplot_y0;
 

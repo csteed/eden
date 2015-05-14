@@ -1,10 +1,11 @@
 package gov.ornl.eden;
 
+import gov.ornl.datatable.DataModel;
+
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics2D;
-import java.awt.Polygon;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.font.FontRenderContext;
@@ -127,10 +128,11 @@ public class PCAxesRenderer extends Renderer {
 
 				// g2.setColor(AXIS_BAR_LINE_COLOR);
 				double freqData[];
-				if (useQueryFrequency) {
-					freqData = axis.column.getQueryHistogram().getArray();
+				if (useQueryFrequency && (dataModel.getActiveQuery().getColumnQuerySummaryStats(axis.column) != null)) {
+					freqData = dataModel.getActiveQuery().getColumnQuerySummaryStats(axis.column).getHistogram().getArray();
+//					freqData = axis.column.getQueryHistogram().getArray();
 				} else {
-					freqData = axis.column.getHistogram().getArray();
+					freqData = axis.column.getSummaryStats().getHistogram().getArray();
 				}
 
 				double maxFreq = 0.;
@@ -214,7 +216,8 @@ public class PCAxesRenderer extends Renderer {
 			// draw axis as bar or line
 			// if (showAxesAsBars || showFrequencyInfo) {
 			if (showAxesAsBars) {
-				boolean querySet = dataModel.isColumnQuerySet();
+				boolean querySet = dataModel.getActiveQuery().hasColumnSelections();
+//				boolean querySet = dataModel.isColumnQuerySet();
 
 				// draw the axis as a bar
 				g2.setColor(AXIS_BAR_FILL_COLOR);
@@ -369,8 +372,8 @@ public class PCAxesRenderer extends Renderer {
 			// fontHeight = g2.getFontMetrics().getHeight();
 
 			g2.setColor(Color.gray);
-			String minLabel = DECIMAL_FORMAT.format(axis.column.getMinValue());
-			String maxLabel = DECIMAL_FORMAT.format(axis.column.getMaxValue());
+			String minLabel = DECIMAL_FORMAT.format(axis.column.getSummaryStats().getMin());
+			String maxLabel = DECIMAL_FORMAT.format(axis.column.getSummaryStats().getMax());
 			// int stringHeight = (int)titleFont.getLineMetrics(minLabel,
 			// frc).getHeight();
 			int stringHeight = g2.getFontMetrics().getHeight();
@@ -385,12 +388,11 @@ public class PCAxesRenderer extends Renderer {
 			if (showCorrelationIndicators) {
 				g2.setStroke(new BasicStroke(1.f));
 				ArrayList<Float> correlationCoefficients;
-				if (useQueryCorrelations) {
-					correlationCoefficients = axis.column
-							.getQueryCorrelationCoefficients();
+				if (useQueryCorrelations && (dataModel.getActiveQuery().getColumnQuerySummaryStats(axis.column) != null)) {
+					correlationCoefficients = dataModel.getActiveQuery().getColumnQuerySummaryStats(axis.column).getCorrelationCoefficients();
+//					correlationCoefficients = axis.column.getQueryCorrelationCoefficients();
 				} else {
-					correlationCoefficients = axis.column
-							.getCorrelationCoefficients();
+					correlationCoefficients = axis.column.getSummaryStats().getCorrelationCoefficients();
 				}
 
 				int bufferBetweenAxes = 6;

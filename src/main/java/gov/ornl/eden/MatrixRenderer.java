@@ -1,5 +1,8 @@
 package gov.ornl.eden;
 
+import gov.ornl.datatable.Column;
+import gov.ornl.datatable.DataModel;
+
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics2D;
@@ -17,10 +20,11 @@ public class MatrixRenderer extends Renderer {
 	private Rectangle matrixRect;
 	private boolean useQueryCorrelations;
 	private ArrayList<Column> columns;
+	private DataModel dataModel;
 
-	public MatrixRenderer(int cellSize, Rectangle matrixRect,
+	public MatrixRenderer(DataModel dataModel, int cellSize, Rectangle matrixRect,
 			boolean useQueryCorrelations, ArrayList<Column> columns) {
-		// this.dataModel = dataModel;
+		this.dataModel = dataModel;
 		this.cellSize = cellSize;
 		this.matrixRect = matrixRect;
 		this.useQueryCorrelations = useQueryCorrelations;
@@ -53,12 +57,12 @@ public class MatrixRenderer extends Renderer {
 			// column.getCorrelationCoefficients();
 			ArrayList<Float> correlationList;
 
-			if (useQueryCorrelations) {
-				correlationList = column.getQueryCorrelationCoefficients();
+			if (useQueryCorrelations && (dataModel.getActiveQuery().getColumnQuerySummaryStats(column) != null)) {
+				correlationList = dataModel.getActiveQuery().getColumnQuerySummaryStats(column).getCorrelationCoefficients();
+//				correlationList = column.getQueryCorrelationCoefficients();
 			} else {
-				correlationList = column.getCorrelationCoefficients();
+				correlationList = column.getSummaryStats().getCorrelationCoefficients();
 			}
-
 			int ypos = iColumn * cellSize;
 
 			for (int i = 0; i < correlationList.size(); i++) {

@@ -1,5 +1,10 @@
 package gov.ornl.eden;
 
+import gov.ornl.datatable.Column;
+import gov.ornl.datatable.DataModel;
+import gov.ornl.datatable.DataModelListener;
+import gov.ornl.datatable.Tuple;
+
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Graphics;
@@ -253,10 +258,10 @@ public class GeoGridPanel extends JPanel implements ComponentListener,
 		Column lonColumn = dataModel.getColumn("lon");
 
 		if (latColumn != null && lonColumn != null) {
-			double maxLat = latColumn.getMaxValue() + 90.;
-			double minLat = latColumn.getMinValue() + 90.;
-			double maxLon = lonColumn.getMaxValue();
-			double minLon = lonColumn.getMinValue();
+			double maxLat = latColumn.getSummaryStats().getMax() + 90.;
+			double minLat = latColumn.getSummaryStats().getMin() + 90.;
+			double maxLon = lonColumn.getSummaryStats().getMax();
+			double minLon = lonColumn.getSummaryStats().getMin();
 
 			log.debug("maxLat=" + maxLat + " minLat=" + minLat + " maxLon="
 					+ maxLon + " minLon=" + minLon);

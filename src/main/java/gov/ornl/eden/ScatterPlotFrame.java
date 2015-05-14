@@ -1,5 +1,8 @@
 package gov.ornl.eden;
 
+import gov.ornl.datatable.Column;
+import gov.ornl.datatable.DataModel;
+
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.EventQueue;
@@ -22,8 +25,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 
-public class ScatterPlotFrame extends JFrame implements
-		DisplaySettingsPanelListener, ActionListener, ItemListener {
+public class ScatterPlotFrame extends JFrame implements DisplaySettingsPanelListener, ActionListener, ItemListener {
 	private ScatterPlotPanel spPanel;
 	ScatterplotConfiguration config;
 	ScatterplotConfiguration nonqueryConfig;
@@ -54,13 +56,11 @@ public class ScatterPlotFrame extends JFrame implements
 	}
 
 	private void initialize() {
-		setTitle("Scatterplot " + xColumn.getName() + " vs "
-				+ yColumn.getName());
+		setTitle("Scatterplot " + xColumn.getName() + " vs " + yColumn.getName());
 		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		setBounds(100, 100, 550, 660);
 		initializePanel();
 		initializeMenu();
-
 	}
 
 	public void setColumns(Column xColumn, Column yColumn) {
