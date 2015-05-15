@@ -2,6 +2,7 @@ package gov.ornl.eden;
 
 import gov.ornl.datatable.Column;
 import gov.ornl.datatable.DataModel;
+import gov.ornl.datatable.IOUtilities;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -192,7 +193,7 @@ public class ScatterPlotFrame extends JFrame implements DisplaySettingsPanelList
 					 * dm.setData(tuples, columns);
 					 */
 
-					Utilities.readCSV(f, dm);
+					IOUtilities.readCSV(f, dm);
 					Column xCol = dm.getColumn(xColumnName);
 					Column yCol = dm.getColumn(yColumnName);
 					// Column xCol = dm.getColumn(0);

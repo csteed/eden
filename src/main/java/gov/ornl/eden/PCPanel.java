@@ -749,9 +749,7 @@ public class PCPanel extends JComponent implements ActionListener,
 		if (dataModel.getTupleCount() == 0) {
 			return;
 		}
-
-		// log.debug("calculating " + dataModel.getTupleCount() + " polylines");
-
+		
 		tupleLines = new ArrayList<Point[]>();
 
 		for (int ituple = 0; ituple < dataModel.getTupleCount(); ituple++) {
@@ -761,20 +759,15 @@ public class PCPanel extends JComponent implements ActionListener,
 			for (int iaxis = 0; iaxis < axisList.size(); iaxis++) {
 				PCAxis axis = axisList.get(iaxis);
 				int xPosition = axis.xPosition;
-				float currentValue = currentTuple
-						.getElement(axis.dataModelIndex);
+				float currentValue = currentTuple.getElement(axis.dataModelIndex);
 				double normValue = (currentValue - axis.column.getSummaryStats().getMin())
                         / (axis.column.getSummaryStats().getMax() - axis.column.getSummaryStats().getMin());
-				int currentYPosition = axis.bottomPosition
-						- (int) (normValue * axis.axisHeight);
-
+				int currentYPosition = axis.bottomPosition - (int) (normValue * axis.axisHeight);
 				tuplePoints[iaxis] = new Point(xPosition, currentYPosition);
 			}
 
 			tupleLines.add(tuplePoints);
 		}
-		// log.debug("finished calculating " + tupleLines.size() +
-		// " polylines");
 	}
 
 	protected void layoutAxes() {
@@ -1421,12 +1414,13 @@ public class PCPanel extends JComponent implements ActionListener,
 		layoutAxes();
 		recalculatePolylines();
 		dataModel.setQueriedTuples();
-		// if (dataModel.getTupleCount() > 0) {
-		// startAxesImageRenderer();
-		// startContextLineRenderer();
-		// startFocusLineRenderer();
-		// startScatterplotRenderers();
-		// }
+
+		if (dataModel.getTupleCount() > 0) {
+			startAxesImageRenderer();
+			startContextLineRenderer();
+			startFocusLineRenderer();
+			startScatterplotRenderers();
+		}
 	}
 
 	@Override
@@ -1437,12 +1431,12 @@ public class PCPanel extends JComponent implements ActionListener,
 				layoutAxes();
 				recalculatePolylines();
 				dataModel.setQueriedTuples();
-				// if (dataModel.getTupleCount() > 0) {
-				// startAxesImageRenderer();
-				// startContextLineRenderer();
-				// startFocusLineRenderer();
-				// startScatterplotRenderers();
-				// }
+				if (dataModel.getTupleCount() > 0) {
+					startAxesImageRenderer();
+					startContextLineRenderer();
+					startFocusLineRenderer();
+					startScatterplotRenderers();
+				}
 				return;
 			}
 		}
@@ -1464,12 +1458,12 @@ public class PCPanel extends JComponent implements ActionListener,
 		layoutAxes();
 		recalculatePolylines();
 		dataModel.setQueriedTuples();
-		// if (dataModel.getTupleCount() > 0) {
-		// startAxesImageRenderer();
-		// startContextLineRenderer();
-		// startFocusLineRenderer();
-		// startScatterplotRenderers();
-		// }
+		if (dataModel.getTupleCount() > 0) {
+			startAxesImageRenderer();
+			startContextLineRenderer();
+			startFocusLineRenderer();
+			startScatterplotRenderers();
+		}
 	}
 
 	@Override
@@ -1479,12 +1473,12 @@ public class PCPanel extends JComponent implements ActionListener,
 		layoutAxes();
 		recalculatePolylines();
 		dataModel.setQueriedTuples();
-		// if (dataModel.getTupleCount() > 0) {
-		// startAxesImageRenderer();
-		// startContextLineRenderer();
-		// startFocusLineRenderer();
-		// startScatterplotRenderers();
-		// }
+		if (dataModel.getTupleCount() > 0) {
+			startAxesImageRenderer();
+			startContextLineRenderer();
+			startFocusLineRenderer();
+			startScatterplotRenderers();
+		}
 		return;
 	}
 
@@ -1817,6 +1811,7 @@ public class PCPanel extends JComponent implements ActionListener,
 
 	@Override
 	public void queryChanged(DataModel dataModel) {
+		log.debug("in PCPanel.queryChanged()");
 		axesImage = focusImage = contextImage = null;
 		layoutAxes();
 		recalculateQueryBoxes();

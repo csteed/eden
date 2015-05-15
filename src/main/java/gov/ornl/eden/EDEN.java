@@ -3,6 +3,7 @@ package gov.ornl.eden;
 import gov.ornl.datatable.Column;
 import gov.ornl.datatable.DataModel;
 import gov.ornl.datatable.DataModelListener;
+import gov.ornl.datatable.IOUtilities;
 import gov.ornl.datatable.Tuple;
 
 import java.awt.BorderLayout;
@@ -94,7 +95,7 @@ public class EDEN implements DataModelListener, ActionListener, WindowListener,
 	public EDEN(File dataFile) {
 		this();
 		try {
-			Utilities.readCSV(dataFile, dataModel);
+			IOUtilities.readCSV(dataFile, dataModel);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -103,7 +104,7 @@ public class EDEN implements DataModelListener, ActionListener, WindowListener,
 	public EDEN(File dataFile, double sampleFactor) {
 		this();
 		try {
-			Utilities.readCSVSample(dataFile, dataModel, sampleFactor);
+			IOUtilities.readCSVSample(dataFile, dataModel, sampleFactor);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -577,22 +578,18 @@ public class EDEN implements DataModelListener, ActionListener, WindowListener,
 				try {
 					dataModel.clear();
 					if (!Double.isNaN(sampleFactor)) {
-						Utilities.readCSVSample(selectedFile, dataModel,
-								sampleFactor);
+						IOUtilities.readCSVSample(selectedFile, dataModel, sampleFactor);
 					} else {
-						Utilities.readCSV(selectedFile, dataModel);
+						IOUtilities.readCSV(selectedFile, dataModel);
 					}
-					String path = selectedFile.getParentFile()
-							.getCanonicalPath();
-					GUIContext.getInstance().getProperties()
-							.put("LAST_CSV_DIRECTORY_PATH", path);
+					String path = selectedFile.getParentFile().getCanonicalPath();
+					GUIContext.getInstance().getProperties().put("LAST_CSV_DIRECTORY_PATH", path);
 				} catch (IOException e1) {
 					e1.printStackTrace();
 				}
 			}
 		} else if (e.getActionCommand().equals("open file csv")) {
-			String lastDirectoryPath = (String) GUIContext.getInstance()
-					.getProperties().get("LAST_CSV_DIRECTORY_PATH");
+			String lastDirectoryPath = (String) GUIContext.getInstance().getProperties().get("LAST_CSV_DIRECTORY_PATH");
 			JFileChooser chooser = new JFileChooser(lastDirectoryPath);
 			chooser.setDialogTitle("Open CSV File");
 			chooser.setMultiSelectionEnabled(false);
@@ -603,11 +600,9 @@ public class EDEN implements DataModelListener, ActionListener, WindowListener,
 
 				try {
 					dataModel.clear();
-					Utilities.readCSV(selectedFile, dataModel);
-					String path = selectedFile.getParentFile()
-							.getCanonicalPath();
-					GUIContext.getInstance().getProperties()
-							.put("LAST_CSV_DIRECTORY_PATH", path);
+					IOUtilities.readCSV(selectedFile, dataModel);
+					String path = selectedFile.getParentFile().getCanonicalPath();
+					GUIContext.getInstance().getProperties().put("LAST_CSV_DIRECTORY_PATH", path);
 				} catch (IOException e1) {
 					e1.printStackTrace();
 				}
@@ -643,8 +638,7 @@ public class EDEN implements DataModelListener, ActionListener, WindowListener,
 			}
 		} else if (e.getSource() == this.arrangeByCorrelation) {
 			if (dataModel.getHighlightedColumn() == null) {
-				JOptionPane
-						.showMessageDialog(
+				JOptionPane.showMessageDialog(
 								this.edenFrame,
 								"An axis must be highlighted. Please select an axis and try again.",
 								"No Highlighted Axis",
