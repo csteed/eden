@@ -2,7 +2,7 @@
 
 <img src="http://cda.ornl.gov/projects/eden/img/eden_logo.png" width="170" align="left" hspace="10" vspace="6">
 
-**EDEN** is an interactive visual analytics tool for exploring quantitative multivariate data.  **EDEN** is written in Java and runs on Mac OS X, Windows, and Linux operating systems. **EDEN** is developed and maintained by the [Oak Ridge National Laboratory](http://www.ornl.gov) [Computational Data Analytics Group](http://cda.ornl.gov).  The lead developer is [Chad A. Steed](http://csteed.github.com/). 
+**EDEN** is an interactive visual analytics tool for exploring quantitative multivariate data.  **EDEN** is written in Java and runs on Mac OS X, Windows, and Linux operating systems. **EDEN** is developed and maintained by the [Oak Ridge National Laboratory](http://www.ornl.gov) [Computational Data Analytics Group](http://cda.ornl.gov).  The lead developer is [Chad A. Steed](http://csteed.com/). 
 
 If you are using **EDEN** for your work, we would greatly appreciate you citing the following paper:
 
@@ -25,4 +25,5 @@ These commands will generate 2 jar files in the target directory.  Copy the jar 
 
 ### Precompiled EDEN jar Files
 
-Earlier releases of **EDEN** precompiled jar files are available from our [Google Code Site](http://code.google.com/p/eden-vis/).  We will be migrating these packages to github soon.
+Earlier precompiled releases of **EDEN** are available from this site under the [releases 
+section](https://github.com/csteed/eden/releases).
