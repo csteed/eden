@@ -53,8 +53,7 @@ public class ScatterplotPointsRenderer extends Renderer {
 		yColumnIndex = dataModel.getColumnIndex(yColumn);
 
 		// setup image
-		image = new BufferedImage(size + 4, size + 4,
-				BufferedImage.TYPE_INT_ARGB);
+		image = new BufferedImage(size + 4, size + 4, BufferedImage.TYPE_INT_ARGB);
 		g2 = (Graphics2D) image.getGraphics();
 		if (antialias) {
 			g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,

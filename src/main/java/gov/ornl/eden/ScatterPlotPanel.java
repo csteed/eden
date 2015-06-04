@@ -470,6 +470,7 @@ public class ScatterPlotPanel extends JPanel implements MouseMotionListener,
 	}
 
 	private void updateQueryPoints() {
+		
 //		xColumn.setMinQueryValue(XPositionToValue(dragRect.x));
 //		xColumn.setMaxQueryValue(XPositionToValue(dragRect.x + dragRect.width));
 //		xColumn.setQueryFlag(true);
@@ -496,7 +497,7 @@ public class ScatterPlotPanel extends JPanel implements MouseMotionListener,
 						- endDragPoint.x), Math.abs(startDragPoint.y
 						- endDragPoint.y));
 		setMousePoint(event.getPoint());
-		// updateQueryPoints();
+//		updateQueryPoints();
 		repaint();
 	}
 

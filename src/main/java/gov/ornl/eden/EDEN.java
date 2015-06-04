@@ -50,7 +50,7 @@ public class EDEN implements DataModelListener, ActionListener, WindowListener,
 		ListSelectionListener, ItemListener, DisplaySettingsPanelListener {
 	private final static Logger log = LoggerFactory.getLogger(EDEN.class);
 
-	private final static String VERSION_STRING = "v0.9";
+	private final static String VERSION_STRING = "v1.0";
 	private final static String TITLE_STRING = "E D E N";
 
 	private JFrame edenFrame;
@@ -111,9 +111,10 @@ public class EDEN implements DataModelListener, ActionListener, WindowListener,
 	}
 
 	public EDEN(ArrayList<Tuple> tuples, ArrayList<Column> columns) {
-		initialize();
+		this();
+//		initialize();
+//		edenFrame.setVisible(true);
 		dataModel.setData(tuples, columns);
-		edenFrame.setVisible(true);
 	}
 
 	private void initialize() {
@@ -519,8 +520,9 @@ public class EDEN implements DataModelListener, ActionListener, WindowListener,
 		// if (edenCLM != null && edenCLM.getFrame().isVisible()) {
 		// }
 		log.debug("windowCLosing called");
-		GUIContext.getInstance().getProperties().save();
-
+		if (GUIContext.getInstance().getProperties() != null) {
+			GUIContext.getInstance().getProperties().save();
+		}
 	}
 
 	@Override
@@ -645,9 +647,14 @@ public class EDEN implements DataModelListener, ActionListener, WindowListener,
 								JOptionPane.ERROR_MESSAGE);
 				return;
 			}
-			pcPanel.arrangeColumnsByCorrelation(
-					dataModel.getHighlightedColumn(),
-					useSelectedDataArrangeMenuItem.isSelected());
+			if (useSelectedDataArrangeMenuItem.isSelected() && dataModel.getActiveQuery().hasColumnSelections()) {
+				dataModel.orderColumnsByCorrelation(dataModel.getHighlightedColumn(), true);
+			} else {
+				dataModel.orderColumnsByCorrelation(dataModel.getHighlightedColumn(), false);
+			}
+//			pcPanel.arrangeColumnsByCorrelation(
+//					dataModel.getHighlightedColumn(),
+//					useSelectedDataArrangeMenuItem.isSelected());
 		} else if (e.getSource() == this.arrangeByDispersion) {
 			pcPanel.arrangeColumnsByDispersion(useSelectedDataArrangeMenuItem
 					.isSelected());

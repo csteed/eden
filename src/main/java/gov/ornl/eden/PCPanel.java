@@ -435,6 +435,7 @@ public class PCPanel extends JComponent implements ActionListener,
 
 	public void paintComponent(Graphics g) {
 		super.paintComponent(g);
+//		log.debug("in paintComponent");
 
 		Graphics2D g2 = (Graphics2D) g;
 		g2.setColor(getBackground());
@@ -1245,7 +1246,7 @@ public class PCPanel extends JComponent implements ActionListener,
                         mouseOverAxis.axisSelectionList.remove(mouseOverAxisSelection);
                         dataModel.clearColumnSelectionRange(mouseOverAxisSelection.getColumnSelectionRange());
                         mouseOverAxisSelection = null;
-                        dataModel.setQueriedTuples();
+//                        dataModel.setQueriedTuples();
                     }
 //					if (mouseOverAxis.column.isQuerySet()) {
 //						mouseOverAxis.column.setQueryFlag(false);
@@ -1811,8 +1812,8 @@ public class PCPanel extends JComponent implements ActionListener,
 
 	@Override
 	public void queryChanged(DataModel dataModel) {
-		log.debug("in PCPanel.queryChanged()");
 		axesImage = focusImage = contextImage = null;
+		
 		layoutAxes();
 		recalculateQueryBoxes();
 		startAxesImageRenderer();

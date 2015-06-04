@@ -66,6 +66,7 @@ public class PCLineRenderer extends Renderer {
 		// log.debug("Starting rendering function " + this.getId());
 		isRunning = true;
 
+		int linesDrawn = 0;
 		image = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
 
 		if (!isRunning)
@@ -91,12 +92,14 @@ public class PCLineRenderer extends Renderer {
 			}
 
 			Tuple tuple = dataModel.getTuple(i);
+//			log.debug("tuple query flag is " + tuple.getQueryFlag());
 
-			if ((tuple.getQueryFlag() && !showFocusLines)
-					|| (!tuple.getQueryFlag() && !showContextLines)) {
+			if ((tuple.getQueryFlag() && !showFocusLines) || (!tuple.getQueryFlag() && !showContextLines)) {
+//				log.debug("skipping tuple drawing");
 				continue;
 			}
 
+			
 			Point[] tuplePoints = tupleLines.get(i);
 			int x0 = tuplePoints[0].x + axisBarWidthHalf;
 			int y0 = tuplePoints[0].y;
@@ -107,11 +110,15 @@ public class PCLineRenderer extends Renderer {
 				x0 = tuplePoints[j].x + axisBarWidthHalf;
 				y0 = y1;
 			}
+			
+			linesDrawn++;
 		}
 
 		if (isRunning) {
 			isRunning = false;
 			fireRendererFinished();
 		}
+		
+//		log.debug("drew " + linesDrawn + " lines [showFocusLines = " + showFocusLines + "]");
 	}
 }
