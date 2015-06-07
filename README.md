@@ -12,6 +12,14 @@ Chad A. Steed, Daniel M. Ricciuto, Galen Shipman, Brian Smith, Peter E. Thornton
 
 Compiling **EDEN** is straightforward.  The first step is to clone the repository.  We supply a [Maven](http://maven.apache.org/) POM file to deal with the dependencies.  In the Eclipse development environment, import the code as a Maven project and Eclipse will build the class files.  
 
+**EDEN** requires the [DataTable](https://github.com/csteed/datatable) library.  The DataTable library must first be compiled and packaged into a jar file.  Instructions for compiling DataTable are available on the DataTable repository.  After compiling DataTable into a jar file, the jar file must be installed in Maven.  Using the following command will install the DataTable file in the local Maven repository:
+
+```
+$ mvn install:install-file -Dfile=datatable-1.0.0.jar -DgroupId=gov.ornl.datatable -DartifactId=datatable -Dversion=1.0.0 -Dpackaging=jar -DgeneratePom=true
+```
+
+Optionally, the DataTable jar file can be specified with a file path in the pom.xml file instead of installing it in the local Maven repository.  
+
 To compile **EDEN** on the command line, issue the following commands:
 
 ```
