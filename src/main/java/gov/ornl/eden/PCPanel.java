@@ -1,6 +1,7 @@
 package gov.ornl.eden;
 
 import gov.ornl.datatable.Column;
+import gov.ornl.datatable.ColumnSelection;
 import gov.ornl.datatable.ColumnSelectionRange;
 import gov.ornl.datatable.ColumnSortRecord;
 import gov.ornl.datatable.DataModel;
@@ -962,7 +963,24 @@ public class PCPanel extends JComponent implements ActionListener,
                         axis.QueryIQRBoxRectangle.width, queryLowerWhiskerY - queryUpperWhiskerY);
             }
             
-            if (!axis.axisSelectionList.isEmpty()) {
+//            axis.axisSelectionList.clear();
+//            ColumnSelection columnSelection = dataModel.getActiveQuery().getColumnSelection(axis.column);
+//            if (columnSelection != null) {
+//            	for (ColumnSelectionRange selectionRange : columnSelection.getColumnSelectionRanges()) {
+//            		PCAxisSelection axisSelection = new PCAxisSelection(selectionRange);
+//            		axis.axisSelectionList.add(axisSelection);
+//                    normValue = (axisSelection.getColumnSelectionRange().getMaxValue() - axis.column.getSummaryStats().getMin()) / (axis.column.getSummaryStats().getMax() - axis.column.getSummaryStats().getMin());
+//                    int maxPosition = axis.bottomPosition - (int) (normValue * axis.axisHeight);
+//                    axisSelection.setMaxPosition(maxPosition);
+//                    normValue = (axisSelection.getColumnSelectionRange().getMinValue() - axis.column.getSummaryStats().getMin()) / (axis.column.getSummaryStats().getMax() - axis.column.getSummaryStats().getMin());
+//                    int minPosition = axis.bottomPosition - (int) (normValue * axis.axisHeight);
+//                    axisSelection.setMinPosition(minPosition);
+//            	}
+//            }
+            
+            // if there are axis selections for the axis, adjust the selection box locations
+            if (!axis.axisSelectionList.isEmpty()) {	
+            	// for each axis selection, adjust min and max locations
                 for (PCAxisSelection axisSelection : axis.axisSelectionList) {
                     normValue = (axisSelection.getColumnSelectionRange().getMaxValue() - axis.column.getSummaryStats().getMin()) / (axis.column.getSummaryStats().getMax() - axis.column.getSummaryStats().getMin());
                     int maxPosition = axis.bottomPosition - (int) (normValue * axis.axisHeight);
@@ -1137,8 +1155,10 @@ public class PCPanel extends JComponent implements ActionListener,
 
 
               if (draggingAxisSelection == null) {
+            	  draggingAxisSelection = new PCAxisSelection();
                   ColumnSelectionRange selectionRange = dataModel.addColumnSelectionRangeToActiveQuery(mouseOverAxis.column, minValue, maxValue);
-                  draggingAxisSelection = new PCAxisSelection(selectionRange);
+//                  draggingAxisSelection = new PCAxisSelection(selectionRange);
+                  draggingAxisSelection.setColumnSelectionRange(selectionRange);
                   mouseOverAxis.axisSelectionList.add(draggingAxisSelection);
               } else {
                   draggingAxisSelection.getColumnSelectionRange().setMaxValue(maxValue);
@@ -1213,9 +1233,7 @@ public class PCPanel extends JComponent implements ActionListener,
 	public void mouseClicked(MouseEvent event) {
 		if (SwingUtilities.isLeftMouseButton(event)) {
 			if (mouseOverAxis != null) {
-				if (event.getClickCount() == 2
-						&& mouseOverAxis.frequencyDisplayRectangle
-								.contains(event.getPoint())) {
+				if (event.getClickCount() == 2 && mouseOverAxis.frequencyDisplayRectangle.contains(event.getPoint())) {
 					double normPosition = (double) (event.getPoint().y - mouseOverAxis.axisBarRectangle.y)
 							/ (double) mouseOverAxis.axisBarRectangle.height;
 					double valueAtMousePoint = mouseOverAxis.column.getSummaryStats().getMax() - (normPosition * (mouseOverAxis.column.getSummaryStats().getMax() - mouseOverAxis.column.getSummaryStats().getMin()));
@@ -1242,10 +1260,11 @@ public class PCPanel extends JComponent implements ActionListener,
 				} else if (event.getClickCount() == 1) {
 					if (mouseOverAxisSelection != null) {
                         log.debug("Mouse clicked on axis selection");
-                        mouseOverAxis.axisSelectionList.remove(mouseOverAxisSelection);
+//                        mouseOverAxis.axisSelectionList.remove(mouseOverAxisSelection);
                         dataModel.clearColumnSelectionRange(mouseOverAxisSelection.getColumnSelectionRange());
                         mouseOverAxisSelection = null;
-                        dataModel.setQueriedTuples();
+                        mouseOverAxisQuery = false;
+//                        dataModel.setQueriedTuples();
                     }
 //					if (mouseOverAxis.column.isQuerySet()) {
 //						mouseOverAxis.column.setQueryFlag(false);
@@ -1811,8 +1830,8 @@ public class PCPanel extends JComponent implements ActionListener,
 
 	@Override
 	public void queryChanged(DataModel dataModel) {
-		log.debug("in PCPanel.queryChanged()");
 		axesImage = focusImage = contextImage = null;
+
 		layoutAxes();
 		recalculateQueryBoxes();
 		startAxesImageRenderer();
@@ -1820,6 +1839,66 @@ public class PCPanel extends JComponent implements ActionListener,
 		startScatterplotRenderers();
 		startContextLineRenderer();
 	}
+	
+	@Override
+	public void dataModelColumnSelectionAdded(DataModel dataModel, ColumnSelectionRange columnSelectionRange) {
+		if (draggingAxisSelection != null) {
+			// mouse drag method will add new pc axis selection
+			return;
+		}
+		
+		// find axis for column of column selection range
+		PCAxis axis = null;
+		for (PCAxis currentAxis : axisList) {
+			if (currentAxis.column == columnSelectionRange.getColumnSelection().getColumn()) {
+				axis = currentAxis;
+				break;
+			}
+		}
+		
+		if (axis == null) {
+			log.debug("Didn't find axis for column of selection range");
+			return;
+		}
+		
+		// add new pc axis selection
+		PCAxisSelection axisSelection = new PCAxisSelection(columnSelectionRange);
+		axis.axisSelectionList.add(axisSelection);
+        double normValue = (axisSelection.getColumnSelectionRange().getMaxValue() - axis.column.getSummaryStats().getMin()) / (axis.column.getSummaryStats().getMax() - axis.column.getSummaryStats().getMin());
+        int maxPosition = axis.bottomPosition - (int) (normValue * axis.axisHeight);
+        axisSelection.setMaxPosition(maxPosition);
+        normValue = (axisSelection.getColumnSelectionRange().getMinValue() - axis.column.getSummaryStats().getMin()) / (axis.column.getSummaryStats().getMax() - axis.column.getSummaryStats().getMin());
+        int minPosition = axis.bottomPosition - (int) (normValue * axis.axisHeight);
+        axisSelection.setMinPosition(minPosition);
+        
+        layoutAxes();
+		recalculateQueryBoxes();
+		startAxesImageRenderer();
+		startFocusLineRenderer();
+		startScatterplotRenderers();
+		startContextLineRenderer();
+	}
+	
+	@Override
+	public void dataModelColumnSelectionRemoved(DataModel dataModel, ColumnSelectionRange columnSelectionRange) {
+		log.debug("entered dataModelColumnSelectionRemoved");
+		for (PCAxis axis : axisList) {
+			if (axis.column == columnSelectionRange.getColumnSelection().getColumn()) {
+				if (!axis.axisSelectionList.isEmpty()) {
+					for (PCAxisSelection axisSelection : axis.axisSelectionList) {
+						log.debug("Removing axis selection");
+						axis.axisSelectionList.remove(axisSelection);
+						startAxesImageRenderer();
+						startFocusLineRenderer();
+						startScatterplotRenderers();
+						startContextLineRenderer();
+						return;
+					}
+				}
+			}
+		}
+	}
+	
 
 	@Override
 	public void actionPerformed(ActionEvent event) {

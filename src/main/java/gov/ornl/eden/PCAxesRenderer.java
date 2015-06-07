@@ -268,7 +268,7 @@ public class PCAxesRenderer extends Renderer {
 							axis.IQRBoxRectangle.x + axis.IQRBoxRectangle.width,
 							axis.medianPosition);
 
-					if (querySet) {
+					if (axis.QueryIQRBoxRectangle != null && querySet) {
 						// draw the query whiskers
 						g2.setColor(QUERY_IQR_LINE_COLOR);
 						dispersion_pane_center = axis.QueryIQRWhiskerRectangle.x
@@ -312,7 +312,7 @@ public class PCAxesRenderer extends Renderer {
 									+ axis.standardDeviationRangeRectangle.width,
 							axis.meanPosition);
 
-					if (querySet) {
+					if (axis.queryStandardDeviationRangeRectangle != null && querySet) {
 						// draw mean centered standard deviation range range box
 						// for queried lines
 						g2.setColor(QUERY_IQR_FILL_COLOR);
@@ -402,17 +402,14 @@ public class PCAxesRenderer extends Renderer {
 				if (blockWidth > axisBarWidth) {
 					blockWidth = axisBarWidth;
 				}
-				int blockXOffset = ((axisSpacing - (2 * bufferBetweenAxes)) - (axisList
-						.size() * blockWidth)) / 2;
+				int blockXOffset = ((axisSpacing - (2 * bufferBetweenAxes)) - (axisList.size() * blockWidth)) / 2;
 
 				for (int i = 0; i < axisList.size(); i++) {
 					PCAxis currentAxis = axisList.get(i);
-					double corrcoef = correlationCoefficients
-							.get(currentAxis.dataModelIndex);
+					double corrcoef = correlationCoefficients.get(currentAxis.dataModelIndex);
 
 					// int x = (axis.rectangle.x + 6) + (i * blockWidth);
-					int x = ((axis.rectangle.x + bufferBetweenAxes) + blockXOffset)
-							+ (i * blockWidth);
+					int x = ((axis.rectangle.x + bufferBetweenAxes) + blockXOffset) + (i * blockWidth);
 
 					// Rectangle r = new Rectangle(x,
 					// axis.topPosition-(fontHeight+correlationIndicatorHeight)/*axis.labelRectangle.y+axis.labelRectangle.height*/,

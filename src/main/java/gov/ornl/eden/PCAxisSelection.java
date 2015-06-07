@@ -11,10 +11,18 @@ public class PCAxisSelection {
     private int maxPosition;
     private int minPosition;
 
+    public PCAxisSelection() {
+    	
+    }
+    
     public PCAxisSelection(ColumnSelectionRange selectionRange) {
         this.selectionRange = selectionRange;
     }
 
+    public void setColumnSelectionRange(ColumnSelectionRange selectionRange) {
+    	this.selectionRange = selectionRange;
+    }
+    
     public int getMinPosition() {
         return minPosition;
     }

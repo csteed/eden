@@ -1,6 +1,7 @@
 package gov.ornl.eden;
 
 import gov.ornl.datatable.Column;
+import gov.ornl.datatable.ColumnSelectionRange;
 import gov.ornl.datatable.DataModel;
 import gov.ornl.datatable.DataModelListener;
 import gov.ornl.datatable.Tuple;
@@ -227,6 +228,16 @@ public class ColumnTableModel extends AbstractTableModel implements DataModelLis
 
 	@Override
 	public void columnEnabled(DataModel dataModel, Column enabledColumn) {
+		fireTableDataChanged();
+	}
+
+	@Override
+	public void dataModelColumnSelectionAdded(DataModel dataModel, ColumnSelectionRange columnSelectionRange) {
+		fireTableDataChanged();
+	}
+
+	@Override
+	public void dataModelColumnSelectionRemoved(DataModel dataModel, ColumnSelectionRange columnSelectionRange) {
 		fireTableDataChanged();
 	}
 }
