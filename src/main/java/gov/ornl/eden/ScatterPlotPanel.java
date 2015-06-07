@@ -1,6 +1,7 @@
 package gov.ornl.eden;
 
 import gov.ornl.datatable.Column;
+import gov.ornl.datatable.ColumnSelectionRange;
 import gov.ornl.datatable.DataModel;
 import gov.ornl.datatable.DataModelListener;
 import gov.ornl.datatable.Tuple;
@@ -22,15 +23,17 @@ import java.awt.image.BufferedImage;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 
+import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 
 import org.apache.commons.math3.stat.regression.SimpleRegression;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-public class ScatterPlotPanel extends JPanel implements MouseMotionListener,
+public class ScatterPlotPanel extends JComponent implements MouseMotionListener,
 		MouseListener, ComponentListener, DataModelListener, RendererListener {
-	private final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(this
-			.getClass());
+	private final Logger log = LoggerFactory.getLogger(ScatterPlotPanel.class);
 
 	public final static DecimalFormat DECIMAL_FORMAT = new DecimalFormat(
 			"##0.0###");
@@ -82,6 +85,9 @@ public class ScatterPlotPanel extends JPanel implements MouseMotionListener,
 	boolean showRegressionLine = true;
 	boolean useQueryRegressionLine = true;
 	boolean antialiasEnabled = true;
+	
+	PCAxisSelection xAxisSelection;
+	PCAxisSelection yAxisSelection;
 
 	public ScatterPlotPanel(DataModel dataModel,
 			ScatterplotConfiguration queryScatterPlotConfig,
@@ -231,7 +237,7 @@ public class ScatterPlotPanel extends JPanel implements MouseMotionListener,
 		}
 	}
 
-	public void paint(Graphics g) {
+	public void paintComponent(Graphics g) {
 		Graphics2D g2 = (Graphics2D) g;
 		g2.setColor(getBackground());
 		g2.fillRect(0, 0, getWidth(), getHeight());
@@ -270,8 +276,10 @@ public class ScatterPlotPanel extends JPanel implements MouseMotionListener,
 			g2.draw(dragRect);
 		}
 
-		// g2.setColor(Color.blue);
-		// g2.draw(plotRectangle);
+//		 g2.setColor(Color.blue);
+//		 g2.draw(plotRectangle);
+//		 g2.setColor(Color.red);
+//		 g2.draw(centeredRectangle);
 	}
 
 	private void layoutPlot() {
@@ -355,7 +363,7 @@ public class ScatterPlotPanel extends JPanel implements MouseMotionListener,
 		}
 
 		plotRenderer = new ScatterplotPointsRenderer(dataModel, xColumn,
-				yColumn, plotRectangle.width, axisSize, queryScatterPlotConfig,
+				yColumn, plotRectangle.width+axisSize, axisSize, queryScatterPlotConfig,
 				simpleRegression, true, false, antialiasEnabled);
 		plotRenderer.addRendererListener(this);
 		plotRenderer.start();
@@ -366,7 +374,7 @@ public class ScatterPlotPanel extends JPanel implements MouseMotionListener,
 		}
 
 		filteredPlotRenderer = new ScatterplotPointsRenderer(dataModel,
-				xColumn, yColumn, plotRectangle.width, axisSize,
+				xColumn, yColumn, plotRectangle.width+axisSize, axisSize,
 				nonqueryScatterPlotConfig, simpleRegression, false, true,
 				antialiasEnabled);
 		filteredPlotRenderer.addRendererListener(this);
@@ -378,7 +386,7 @@ public class ScatterPlotPanel extends JPanel implements MouseMotionListener,
 		}
 
 		axesPlotRenderer = new ScatterplotAxesRenderer(dataModel, xColumn,
-				yColumn, plotRectangle.width, axisSize, queryScatterPlotConfig,
+				yColumn, plotRectangle.width+axisSize, axisSize, queryScatterPlotConfig,
 				antialiasEnabled);
 		axesPlotRenderer.addRendererListener(this);
 		axesPlotRenderer.start();
@@ -440,6 +448,17 @@ public class ScatterPlotPanel extends JPanel implements MouseMotionListener,
 	@Override
 	public void mousePressed(MouseEvent event) {
 		startDragPoint.setLocation(event.getPoint());
+		if (xAxisSelection != null) {
+			dataModel.clearColumnSelectionRange(xAxisSelection.getColumnSelectionRange());
+			xAxisSelection = null;
+		}
+		if (yAxisSelection != null) {
+			dataModel.clearColumnSelectionRange(yAxisSelection.getColumnSelectionRange());
+			yAxisSelection = null;
+		}
+		dataModel.setQueriedTuples();
+		startScatterplotRenderer();
+		repaint();
 	}
 
 	@Override
@@ -470,6 +489,18 @@ public class ScatterPlotPanel extends JPanel implements MouseMotionListener,
 	}
 
 	private void updateQueryPoints() {
+		float minXQueryValue = XPositionToValue(dragRect.x);
+		float maxXQueryValue = XPositionToValue(dragRect.x + dragRect.width);
+		float maxYQueryValue = YPositionToValue(dragRect.y);
+		float minYQueryValue = YPositionToValue(dragRect.y + dragRect.height);
+		log.debug("minXValue = " + minXQueryValue + " maxXValue = " + maxXQueryValue);
+		log.debug("minYValue = " + minYQueryValue + " maxYValue = " + maxYQueryValue);
+		
+		// set a column selection for x and y columns
+		ColumnSelectionRange xSelectionRange = dataModel.addColumnSelectionRangeToActiveQuery(xColumn, minXQueryValue, maxXQueryValue);
+		xAxisSelection = new PCAxisSelection(xSelectionRange);
+		ColumnSelectionRange ySelectionRange = dataModel.addColumnSelectionRangeToActiveQuery(yColumn, minYQueryValue, maxYQueryValue);
+		yAxisSelection = new PCAxisSelection(ySelectionRange);
 		
 //		xColumn.setMinQueryValue(XPositionToValue(dragRect.x));
 //		xColumn.setMaxQueryValue(XPositionToValue(dragRect.x + dragRect.width));
@@ -583,5 +614,19 @@ public class ScatterPlotPanel extends JPanel implements MouseMotionListener,
 			ArrayList<Column> disabledColumns) {
 		// TODO Auto-generated method stub
 
+	}
+
+	@Override
+	public void dataModelColumnSelectionRemoved(DataModel dataModel, ColumnSelectionRange columnSelectionRange) {
+		// TODO Auto-generated method stub
+		calculateStatistics();
+		startScatterplotRenderer();
+	}
+	
+	@Override
+	public void dataModelColumnSelectionAdded(DataModel dataModel, ColumnSelectionRange columnSelectionRange) {
+		// TODO Auto-generated method stub
+		calculateStatistics();
+		startScatterplotRenderer();
 	}
 }

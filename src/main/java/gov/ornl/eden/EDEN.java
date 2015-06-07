@@ -1,6 +1,7 @@
 package gov.ornl.eden;
 
 import gov.ornl.datatable.Column;
+import gov.ornl.datatable.ColumnSelectionRange;
 import gov.ornl.datatable.DataModel;
 import gov.ornl.datatable.DataModelListener;
 import gov.ornl.datatable.IOUtilities;
@@ -895,5 +896,21 @@ public class EDEN implements DataModelListener, ActionListener, WindowListener,
 	@Override
 	public void pcLineSizeChanged(int size) {
 		pcPanel.setLineSize(size);
+	}
+
+	@Override
+	public void dataModelColumnSelectionAdded(DataModel dataModel, ColumnSelectionRange columnSelectionRange) {
+		// TODO Auto-generated method stub
+		boolean querySet = dataModel.getActiveQuery() != null && dataModel.getActiveQuery().hasColumnSelections();
+		arrangeByDispersionDifference.setEnabled(querySet);
+		arrangeByTypicalDifference.setEnabled(querySet);
+	}
+	
+	@Override
+	public void dataModelColumnSelectionRemoved(DataModel dataModel, ColumnSelectionRange columnSelectionRange) {
+		// TODO Auto-generated method stub
+		boolean querySet = dataModel.getActiveQuery() != null && dataModel.getActiveQuery().hasColumnSelections();
+		arrangeByDispersionDifference.setEnabled(querySet);
+		arrangeByTypicalDifference.setEnabled(querySet);
 	}
 }

@@ -1,6 +1,7 @@
 package gov.ornl.eden;
 
 import gov.ornl.datatable.Column;
+import gov.ornl.datatable.ColumnSelectionRange;
 import gov.ornl.datatable.DataModel;
 import gov.ornl.datatable.DataModelListener;
 import gov.ornl.datatable.Tuple;
@@ -361,4 +362,17 @@ public class GeoGridPanel extends JPanel implements ComponentListener,
 
 	}
 
+	@Override
+	public void dataModelColumnSelectionAdded(DataModel dataModel,
+			ColumnSelectionRange columnSelectionRange) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void dataModelColumnSelectionRemoved(DataModel dataModel,
+			ColumnSelectionRange columnSelectionRange) {
+		// TODO Auto-generated method stub
+		
+	}
 }

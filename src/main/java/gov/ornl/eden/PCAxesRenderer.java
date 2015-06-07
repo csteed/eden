@@ -402,17 +402,14 @@ public class PCAxesRenderer extends Renderer {
 				if (blockWidth > axisBarWidth) {
 					blockWidth = axisBarWidth;
 				}
-				int blockXOffset = ((axisSpacing - (2 * bufferBetweenAxes)) - (axisList
-						.size() * blockWidth)) / 2;
+				int blockXOffset = ((axisSpacing - (2 * bufferBetweenAxes)) - (axisList.size() * blockWidth)) / 2;
 
 				for (int i = 0; i < axisList.size(); i++) {
 					PCAxis currentAxis = axisList.get(i);
-					double corrcoef = correlationCoefficients
-							.get(currentAxis.dataModelIndex);
+					double corrcoef = correlationCoefficients.get(currentAxis.dataModelIndex);
 
 					// int x = (axis.rectangle.x + 6) + (i * blockWidth);
-					int x = ((axis.rectangle.x + bufferBetweenAxes) + blockXOffset)
-							+ (i * blockWidth);
+					int x = ((axis.rectangle.x + bufferBetweenAxes) + blockXOffset) + (i * blockWidth);
 
 					// Rectangle r = new Rectangle(x,
 					// axis.topPosition-(fontHeight+correlationIndicatorHeight)/*axis.labelRectangle.y+axis.labelRectangle.height*/,

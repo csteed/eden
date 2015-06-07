@@ -1,6 +1,7 @@
 package gov.ornl.eden;
 
 import gov.ornl.datatable.Column;
+import gov.ornl.datatable.ColumnSelectionRange;
 import gov.ornl.datatable.DataModel;
 import gov.ornl.datatable.DataModelListener;
 import gov.ornl.datatable.Tuple;
@@ -383,5 +384,15 @@ public class CorrelationMatrixPanel extends JPanel implements
 
 	@Override
 	public void windowOpened(WindowEvent arg0) {
+	}
+
+	@Override
+	public void dataModelColumnSelectionAdded(DataModel dataModel, ColumnSelectionRange columnSelectionRange) {
+		startMatrixRenderer();
+	}
+	
+	@Override
+	public void dataModelColumnSelectionRemoved(DataModel dataModel, ColumnSelectionRange columnSelectionRange) {
+		startMatrixRenderer();
 	}
 }

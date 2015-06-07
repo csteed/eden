@@ -67,10 +67,10 @@ public class ScatterplotAxesRenderer extends Renderer {
 		g2.setFont(config.labelFont);
 
 		left = 0;
-		// right = plotSize+axisSize-1;
+//		right = plotSize+axisSize-1;
 		right = plotSize - 1;
 		top = 0;
-		// bottom = plotSize+axisSize-1;
+//		bottom = plotSize+axisSize-1;
 		bottom = plotSize - 1;
 
 		plot_left = axisSize - 1;
