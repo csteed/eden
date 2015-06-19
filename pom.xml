@@ -4,7 +4,6 @@
 
 	<groupId>gov.ornl.eden</groupId>
 	<artifactId>eden</artifactId>
-	<version>0.9.0</version>
 	<packaging>jar</packaging>
 
 	<name>eden</name>
@@ -72,5 +71,6 @@
 			</plugin>
 		</plugins>
 	</build>
+	<version>0.10.0</version>
 </project>
 
