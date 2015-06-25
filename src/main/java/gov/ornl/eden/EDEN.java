@@ -51,7 +51,7 @@ public class EDEN implements DataModelListener, ActionListener, WindowListener,
 		ListSelectionListener, ItemListener, DisplaySettingsPanelListener {
 	private final static Logger log = LoggerFactory.getLogger(EDEN.class);
 
-	private final static String VERSION_STRING = "v0.10";
+	private final static String VERSION_STRING = "v0.10.0";
 	private final static String TITLE_STRING = "E D E N";
 
 	private JFrame edenFrame;
@@ -453,6 +453,12 @@ public class EDEN implements DataModelListener, ActionListener, WindowListener,
 	static double sampleFactor = Double.NaN;
 
 	public static void main(String args[]) throws Exception {
+//		if (args.length == 0)  {
+//			System.err.println("I need a file!");
+//			System.err.println("Usage: java EDEN <input_filename> [optional_parameter]");
+//			System.exit(0);
+//		}
+		
 		if (args.length > 0) {
 			file = new File(args[0]);
 
