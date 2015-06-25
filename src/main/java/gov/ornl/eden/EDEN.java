@@ -518,9 +518,6 @@ public class EDEN implements DataModelListener, ActionListener, WindowListener,
 
 	@Override
 	public void windowClosing(WindowEvent event) {
-		// if (edenCLM != null && edenCLM.getFrame().isVisible()) {
-		// }
-		log.debug("windowCLosing called");
 		if (GUIContext.getInstance().getProperties() != null) {
 			GUIContext.getInstance().getProperties().save();
 		}

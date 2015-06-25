@@ -980,6 +980,7 @@ public class PCPanel extends JComponent implements ActionListener,
             
             // if there are axis selections for the axis, adjust the selection box locations
             if (!axis.axisSelectionList.isEmpty()) {	
+            	log.debug("axis + " + axis.column.getName() + " has " + axis.axisSelectionList.size() + " selections");
             	// for each axis selection, adjust min and max locations
                 for (PCAxisSelection axisSelection : axis.axisSelectionList) {
                     normValue = (axisSelection.getColumnSelectionRange().getMaxValue() - axis.column.getSummaryStats().getMin()) / (axis.column.getSummaryStats().getMax() - axis.column.getSummaryStats().getMin());
@@ -1886,14 +1887,18 @@ public class PCPanel extends JComponent implements ActionListener,
 			if (axis.column == columnSelectionRange.getColumnSelection().getColumn()) {
 				if (!axis.axisSelectionList.isEmpty()) {
 					for (PCAxisSelection axisSelection : axis.axisSelectionList) {
-						log.debug("Removing axis selection");
-						axis.axisSelectionList.remove(axisSelection);
-						startAxesImageRenderer();
-						startFocusLineRenderer();
-						startScatterplotRenderers();
-						startContextLineRenderer();
-						return;
+						if (axisSelection.getColumnSelectionRange() == columnSelectionRange) {
+							log.debug("Removing axis selection");
+							axis.axisSelectionList.remove(axisSelection);
+							startAxesImageRenderer();
+							startFocusLineRenderer();
+							startScatterplotRenderers();
+							startContextLineRenderer();
+							return;
+						}
 					}
+					log.debug("Something strange happened. A columne selection was removed "
+							+ "but I cannot find it in the axis selection list. Possibly an error.");
 				}
 			}
 		}
