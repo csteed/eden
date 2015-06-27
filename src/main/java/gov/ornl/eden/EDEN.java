@@ -204,15 +204,13 @@ public class EDEN implements DataModelListener, ActionListener, WindowListener,
 
 		JMenu frequencyMenu = new JMenu("Frequency Information");
 		menu.add(frequencyMenu);
-		showFrequencyDataMenuItem = new JCheckBoxMenuItem(
-				"Show Frequency Information", true);
+		showFrequencyDataMenuItem = new JCheckBoxMenuItem("Show Frequency Information", true);
 		showFrequencyDataMenuItem.setMnemonic(KeyEvent.VK_F);
 		showFrequencyDataMenuItem.setSelected(pcPanel.isShowingFrequencyInfo());
 		showFrequencyDataMenuItem.addItemListener(this);
 		frequencyMenu.add(showFrequencyDataMenuItem);
-		useQueryFrequencyDataMenuItem = new JCheckBoxMenuItem(
-				"Use Only Selected Data", true);
-		useQueryFrequencyDataMenuItem.addActionListener(this);
+		useQueryFrequencyDataMenuItem = new JCheckBoxMenuItem("Use Only Selected Data", true);
+		useQueryFrequencyDataMenuItem.addItemListener(this);
 		useQueryFrequencyDataMenuItem.setMnemonic(KeyEvent.VK_S);
 		useQueryFrequencyDataMenuItem.setSelected(true);
 		frequencyMenu.add(useQueryFrequencyDataMenuItem);
@@ -224,8 +222,7 @@ public class EDEN implements DataModelListener, ActionListener, WindowListener,
 		medianDisplayMenuItem.setMnemonic(KeyEvent.VK_M);
 		group.add(medianDisplayMenuItem);
 		dispersionDisplayMenu.add(medianDisplayMenuItem);
-		meanDisplayMenuItem = new JRadioButtonMenuItem(
-				"Mean / Standard Deviation", false);
+		meanDisplayMenuItem = new JRadioButtonMenuItem("Mean / Standard Deviation", false);
 		meanDisplayMenuItem.setMnemonic(KeyEvent.VK_E);
 		group.add(meanDisplayMenuItem);
 		dispersionDisplayMenu.add(meanDisplayMenuItem);
@@ -792,8 +789,7 @@ public class EDEN implements DataModelListener, ActionListener, WindowListener,
 	@Override
 	public void itemStateChanged(ItemEvent event) {
 		if (event.getItem() == showFilteredDataMenuItem) {
-			pcPanel.setShowingFilteredData(showFilteredDataMenuItem
-					.isSelected());
+			pcPanel.setShowingFilteredData(showFilteredDataMenuItem.isSelected());
 		} else if (event.getItem() == showAxesAsBarsMenuItem) {
 			pcPanel.setShowingAxesAsBars(showAxesAsBarsMenuItem.isSelected());
 		} else if (event.getItem() == showQueryLimitsMenuItem) {
@@ -805,8 +801,7 @@ public class EDEN implements DataModelListener, ActionListener, WindowListener,
 		} else if (event.getItem() == this.showFrequencyDataMenuItem) {
 			pcPanel.setShowFrequencyInfo(showFrequencyDataMenuItem.isSelected());
 		} else if (event.getItem() == this.useQueryFrequencyDataMenuItem) {
-			pcPanel.setUseQueryFrequencyData(useQueryFrequencyDataMenuItem
-					.isSelected());
+			pcPanel.setUseQueryFrequencyData(useQueryFrequencyDataMenuItem.isSelected());
 		} else if (event.getSource() == meanDisplayMenuItem) {
 			pcPanel.setDispersionDisplayMode(PCPanel.MEAN_DISPERSION_BOX_MODE);
 		} else if (event.getSource() == medianDisplayMenuItem) {
@@ -814,17 +809,12 @@ public class EDEN implements DataModelListener, ActionListener, WindowListener,
 		} else if (event.getItem() == showPCLinesMenuItem) {
 			pcPanel.setShowingPolylines(showPCLinesMenuItem.isSelected());
 		} else if (event.getItem() == this.queryStatsCheckBox) {
-			colTableModel.setShowQueryStatistics(queryStatsCheckBox
-					.isSelected());
+			colTableModel.setShowQueryStatistics(queryStatsCheckBox.isSelected());
 		} else if (event.getItem() == useQueryCorrelationsMenuItem) {
-			pcPanel.setUseQueryCorrelationCoefficients(useQueryCorrelationsMenuItem
-					.isSelected());
-			corrMatrixPanel
-					.setUseQueryCorrelationCoefficients(useQueryCorrelationsMenuItem
-							.isSelected());
+			pcPanel.setUseQueryCorrelationCoefficients(useQueryCorrelationsMenuItem.isSelected());
+			corrMatrixPanel.setUseQueryCorrelationCoefficients(useQueryCorrelationsMenuItem.isSelected());
 		} else if (event.getItem() == showCorrelationIndicatorsMenuItem) {
-			pcPanel.setShowCorrelationIndicators(showCorrelationIndicatorsMenuItem
-					.isSelected());
+			pcPanel.setShowCorrelationIndicators(showCorrelationIndicatorsMenuItem.isSelected());
 		}
 	}
 
