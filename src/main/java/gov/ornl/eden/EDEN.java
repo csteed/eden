@@ -51,7 +51,7 @@ public class EDEN implements DataModelListener, ActionListener, WindowListener,
 		ListSelectionListener, ItemListener, DisplaySettingsPanelListener {
 	private final static Logger log = LoggerFactory.getLogger(EDEN.class);
 
-	private final static String VERSION_STRING = "v0.10.0";
+	private final static String VERSION_STRING = "v0.10.01";
 	private final static String TITLE_STRING = "E D E N";
 
 	private JFrame edenFrame;
