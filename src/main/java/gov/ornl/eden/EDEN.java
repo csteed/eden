@@ -11,6 +11,7 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.EventQueue;
+import java.awt.Graphics2D;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
@@ -18,12 +19,14 @@ import java.awt.event.ItemListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
+import java.awt.image.BufferedImage;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 
+import javax.imageio.ImageIO;
 import javax.swing.BorderFactory;
 import javax.swing.ButtonGroup;
 import javax.swing.JCheckBox;
@@ -51,7 +54,7 @@ public class EDEN implements DataModelListener, ActionListener, WindowListener,
 		ListSelectionListener, ItemListener, DisplaySettingsPanelListener {
 	private final static Logger log = LoggerFactory.getLogger(EDEN.class);
 
-	private final static String VERSION_STRING = "v0.10.01";
+	private final static String VERSION_STRING = "v0.10.02";
 	private final static String TITLE_STRING = "E D E N";
 
 	private JFrame edenFrame;
@@ -155,6 +158,11 @@ public class EDEN implements DataModelListener, ActionListener, WindowListener,
 		mi.setActionCommand("save selected lines");
 		menu.add(mi);
 
+		mi = new JMenuItem("Screen Capture...", KeyEvent.VK_S);
+		mi.addActionListener(this);
+		mi.setActionCommand("screen capture");
+		menu.add(mi);
+		
 		menu.addSeparator();
 
 		mi = new JMenuItem("Exit", KeyEvent.VK_X);
@@ -668,11 +676,34 @@ public class EDEN implements DataModelListener, ActionListener, WindowListener,
 			pcPanel.arrangeColumnsByTypicalDifference();
 		} else if (e.getSource() == this.antialiasMenuItem) {
 			pcPanel.setAntialiasEnabled(antialiasMenuItem.isSelected());
+		} else if (e.getActionCommand().equals("screen capture")) {
+			String lastDirectoryPath = (String) GUIContext.getInstance().getProperties().get("LAST_SCREEN_CAPTURE_DIRECTORY_PATH");
+			JFileChooser chooser = new JFileChooser(lastDirectoryPath);
+			chooser.setDialogTitle("Save Selected Lines");
+			chooser.setMultiSelectionEnabled(false);
+			chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+			int ret = chooser.showSaveDialog(this.edenFrame);
+			if (ret == JFileChooser.APPROVE_OPTION) {
+				File selectedFile = chooser.getSelectedFile();
+
+				
+				BufferedImage pcPanelImage = new BufferedImage(pcPanel.getWidth(), pcPanel.getHeight(), BufferedImage.TYPE_INT_ARGB);
+				pcPanel.paintComponent(pcPanelImage.getGraphics());
+				
+				try {
+					ImageIO.write(pcPanelImage, "png", selectedFile);
+					String path = selectedFile.getParentFile().getCanonicalPath();
+					GUIContext.getInstance().getProperties().put("LAST_SCREEN_CAPTURE_DIRECTORY_PATH", path);
+				} catch (IOException ex) {
+					ex.printStackTrace();
+					log.debug(ex.getMessage());
+				}
+			}
 		}
 	}
 
 	private void saveSelectedLines() throws IOException {
-		JFileChooser chooser = new JFileChooser(new File("resources/data/"));
+		JFileChooser chooser = new JFileChooser();
 		chooser.setDialogTitle("Save Selected Lines");
 		chooser.setMultiSelectionEnabled(false);
 		chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);

@@ -16,7 +16,7 @@ public class ColumnTableModel extends AbstractTableModel implements DataModelLis
 	private DataModel dataModel;
 	private String[] columnHeaders = { "Display", "Variable", "Mean", "Median",
 			"StDev", "Variance", "Q1", "Q3", "IQR", "Skewness", "Kustosis",
-			"Min", "Max", "Query Min", "Query Max", "R2", "R2Adj", "beta" };
+			"Min", "Max"};
 	private boolean showQueryStatistics = false;
 
 	public ColumnTableModel(DataModel dataModel) {
@@ -73,7 +73,7 @@ public class ColumnTableModel extends AbstractTableModel implements DataModelLis
 	}
 
 	public boolean isCellEditable(int row, int col) {
-		if (col == 0 || col == 1 || col == 13 || col == 14) {
+		if (col == 0 || col == 1) {
 			return true;
 		}
 		return false;
@@ -133,68 +133,79 @@ public class ColumnTableModel extends AbstractTableModel implements DataModelLis
 			} else if (col == 1) {
 				return column.getName();
 			} else if (col == 2) {
-				if (showQueryStatistics) {
+				if (showQueryStatistics && dataModel.getActiveQuery().hasColumnSelections()) {
 					// TODO: Add query statistics display
+					return dataModel.getActiveQuery().getColumnQuerySummaryStats(column).getMean();
 //					return column.getQueryMean();
 				} else {
 					return column.getSummaryStats().getMean();
 				}
 			} else if (col == 3) {
-				if (showQueryStatistics) {
+				if (showQueryStatistics  && dataModel.getActiveQuery().hasColumnSelections()) {
+					return dataModel.getActiveQuery().getColumnQuerySummaryStats(column).getMedian();
 //					return column.getQueryMedian();
 				} else {
 					return column.getSummaryStats().getMedian();
 				}
 			} else if (col == 4) {
-				if (showQueryStatistics) {
+				if (showQueryStatistics && dataModel.getActiveQuery().hasColumnSelections()) {
+					return dataModel.getActiveQuery().getColumnQuerySummaryStats(column).getStandardDeviation();
 //					return column.getQueryStandardDeviation();
 				} else {
 					return column.getSummaryStats().getStandardDeviation();
 				}
 			} else if (col == 5) {
-				if (showQueryStatistics) {
+				if (showQueryStatistics && dataModel.getActiveQuery().hasColumnSelections()) {
+					return dataModel.getActiveQuery().getColumnQuerySummaryStats(column).getVariance();
 //					return column.getQueryVariance();
 				} else {
 					return column.getSummaryStats().getVariance();
 				}
 			} else if (col == 6) {
-				if (showQueryStatistics) {
+				if (showQueryStatistics && dataModel.getActiveQuery().hasColumnSelections()) {
+					return dataModel.getActiveQuery().getColumnQuerySummaryStats(column).getQuantile1();
 //					return column.getQueryQ1();
 				} else {
 					return column.getSummaryStats().getQuantile1();
 				}
 			} else if (col == 7) {
-				if (showQueryStatistics) {
+				if (showQueryStatistics && dataModel.getActiveQuery().hasColumnSelections()) {
+					return dataModel.getActiveQuery().getColumnQuerySummaryStats(column).getQuantile3();
 //					return column.getQueryQ3();
 				} else {
 					return column.getSummaryStats().getQuantile3();
 				}
 			} else if (col == 8) {
-				if (showQueryStatistics) {
+				if (showQueryStatistics && dataModel.getActiveQuery().hasColumnSelections()) {
+					return dataModel.getActiveQuery().getColumnQuerySummaryStats(column).getIQR();
 //					return column.getQueryIQR();
 				} else {
 					return column.getSummaryStats().getIQR();
 				}
 			} else if (col == 9) {
-				if (showQueryStatistics) {
+				if (showQueryStatistics && dataModel.getActiveQuery().hasColumnSelections()) {
+					return dataModel.getActiveQuery().getColumnQuerySummaryStats(column).getSkewness();
 //					return column.getQuerySkewness();
 				} else {
 					return column.getSummaryStats().getSkewness();
 				}
 			} else if (col == 10) {
-				if (showQueryStatistics) {
+				if (showQueryStatistics && dataModel.getActiveQuery().hasColumnSelections()) {
+					return dataModel.getActiveQuery().getColumnQuerySummaryStats(column).getKurtosis();
 //					return column.getQueryKurtosis();
 				} else {
 					return column.getSummaryStats().getKurtosis();
 				}
 			} else if (col == 11) {
-				if (showQueryStatistics) {
+				if (showQueryStatistics && dataModel.getActiveQuery().hasColumnSelections()) {
+					return dataModel.getActiveQuery().getColumnQuerySummaryStats(column).getMin();
 //					return column.getQueryMinValue();
 				} else {
 					return column.getSummaryStats().getMin();
 				}
 			} else if (col == 12) {
-				if (showQueryStatistics) {
+				if (showQueryStatistics && dataModel.getActiveQuery().hasColumnSelections()) {
+					return dataModel.getActiveQuery().getColumnQuerySummaryStats(column).getMax();
 //					return column.getQueryMaxValue();
 				} else {
 					return column.getSummaryStats().getMax();
