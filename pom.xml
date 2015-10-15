@@ -71,6 +71,6 @@
 			</plugin>
 		</plugins>
 	</build>
-	<version>0.10.02</version>
+	<version>0.11.0</version>
 </project>
 

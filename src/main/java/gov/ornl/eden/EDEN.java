@@ -11,7 +11,6 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.EventQueue;
-import java.awt.Graphics2D;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
@@ -54,7 +53,7 @@ public class EDEN implements DataModelListener, ActionListener, WindowListener,
 		ListSelectionListener, ItemListener, DisplaySettingsPanelListener {
 	private final static Logger log = LoggerFactory.getLogger(EDEN.class);
 
-	private final static String VERSION_STRING = "v0.10.02";
+	private final static String VERSION_STRING = "v0.11.0";
 	private final static String TITLE_STRING = "E D E N";
 
 	private JFrame edenFrame;
@@ -62,7 +61,9 @@ public class EDEN implements DataModelListener, ActionListener, WindowListener,
 	private PCPanel pcPanel;
 	private CorrelationMatrixPanel corrMatrixPanel;
 	private ColumnTableModel colTableModel;
-	private JTable table;
+    private DataTableModel dataTableModel;
+    private JTable dataTable;
+	private JTable statsTable;
 	private JCheckBoxMenuItem showFilteredDataMenuItem;
 	private JCheckBoxMenuItem showAxesAsBarsMenuItem;
 	private JMenuItem removeSelectedDataMenuItem;
@@ -405,11 +406,20 @@ public class EDEN implements DataModelListener, ActionListener, WindowListener,
 		// mainSplit.setDividerLocation(200);
 		// mainSplit.setOneTouchExpandable(true);
 
+        dataTableModel = new DataTableModel(dataModel);
+        dataTable = new JTable(dataTableModel);
+        dataTable.setPreferredScrollableViewportSize(new Dimension(500, 70));
+        dataTable.getSelectionModel().addListSelectionListener(this); //TODO: handle selections of tuples in data table
+        JScrollPane dataTableScroller = new JScrollPane(dataTable);
+        JPanel dataTablePanel = new JPanel();
+        dataTablePanel.setLayout(new BorderLayout());
+        dataTablePanel.add(dataTableScroller, BorderLayout.CENTER);
+
 		colTableModel = new ColumnTableModel(dataModel);
-		table = new JTable(colTableModel);
-		table.setPreferredScrollableViewportSize(new Dimension(500, 70));
-		table.getSelectionModel().addListSelectionListener(this);
-		JScrollPane tableScroller = new JScrollPane(table);
+		statsTable = new JTable(colTableModel);
+		statsTable.setPreferredScrollableViewportSize(new Dimension(500, 70));
+		statsTable.getSelectionModel().addListSelectionListener(this);
+		JScrollPane tableScroller = new JScrollPane(statsTable);
 
 		JPanel statsTablePanel = new JPanel();
 		statsTablePanel.setLayout(new BorderLayout());
@@ -435,6 +445,7 @@ public class EDEN implements DataModelListener, ActionListener, WindowListener,
 		// mainSplit.setOneTouchExpandable(true);
 
 		JTabbedPane tabPane = new JTabbedPane();
+        tabPane.add(dataTablePanel, "Data Table");
 		tabPane.add(statsTablePanel, "Column Statistics Table");
 		tabPane.add(settingsPanelScroller, "Display Settings");
 
@@ -451,7 +462,6 @@ public class EDEN implements DataModelListener, ActionListener, WindowListener,
 		JPanel mainPanel = (JPanel) edenFrame.getContentPane();
 		mainPanel.setLayout(new BorderLayout());
 		mainPanel.add(mainSplit, BorderLayout.CENTER);
-
 	}
 
 	static File file = null;
@@ -789,12 +799,12 @@ public class EDEN implements DataModelListener, ActionListener, WindowListener,
 	public void valueChanged(ListSelectionEvent event) {
 		// log.debug("valueChanged source class is " +
 		// event.getSource().getClass().toString());
-		if (event.getSource() == table.getSelectionModel()) {
+		if (event.getSource() == statsTable.getSelectionModel()) {
 			if (event.getValueIsAdjusting()) {
 				return;
 			}
-			String columnName = (String) table.getValueAt(
-					table.getSelectedRow(), 1);
+			String columnName = (String) statsTable.getValueAt(
+					statsTable.getSelectedRow(), 1);
 			Column column = dataModel.getColumn(columnName);
 			dataModel.setHighlightedColumn(column);
 		}
@@ -813,7 +823,7 @@ public class EDEN implements DataModelListener, ActionListener, WindowListener,
 		int colIndex = dataModel.getColumnIndex(dataModel
 				.getHighlightedColumn());
 		if (colIndex != -1) {
-			table.setRowSelectionInterval(colIndex, colIndex);
+			statsTable.setRowSelectionInterval(colIndex, colIndex);
 		}
 	}
 
