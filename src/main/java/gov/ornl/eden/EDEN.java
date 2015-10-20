@@ -53,7 +53,7 @@ public class EDEN implements DataModelListener, ActionListener, WindowListener,
 		ListSelectionListener, ItemListener, DisplaySettingsPanelListener {
 	private final static Logger log = LoggerFactory.getLogger(EDEN.class);
 
-	private final static String VERSION_STRING = "v0.11.0";
+	private final static String VERSION_STRING = "v0.11.1";
 	private final static String TITLE_STRING = "E D E N";
 
 	private JFrame edenFrame;
@@ -329,7 +329,7 @@ public class EDEN implements DataModelListener, ActionListener, WindowListener,
 		removeSelectedDataMenuItem.setActionCommand("remove selected lines");
 		menu.add(removeSelectedDataMenuItem);
 
-		removeUnselectedDataMenuItem = new JMenuItem("Keep Selected Data",
+		removeUnselectedDataMenuItem = new JMenuItem("Keep Only Selected Data",
 				KeyEvent.VK_U);
 		removeUnselectedDataMenuItem.setEnabled(true);
 		removeUnselectedDataMenuItem.addActionListener(this);
@@ -642,7 +642,8 @@ public class EDEN implements DataModelListener, ActionListener, WindowListener,
 					+ " tuples removed.", "Tuples Removed",
 					JOptionPane.INFORMATION_MESSAGE);
 		} else if (e.getSource() == removeUnselectedDataMenuItem) {
-			int linesRemoved = dataModel.removeSelectedTuples();
+			int linesRemoved = dataModel.removeUnselectedTuples();
+//			int linesRemoved = dataModel.removeSelectedTuples();
 			JOptionPane.showMessageDialog(edenFrame, linesRemoved
 					+ " tuples removed.", "Tuples Removed",
 					JOptionPane.INFORMATION_MESSAGE);
