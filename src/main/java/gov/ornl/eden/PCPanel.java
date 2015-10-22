@@ -787,6 +787,16 @@ public class PCPanel extends JComponent implements ActionListener,
 					axisList.add(axis);
 				}
 			}
+		} else {
+			for (int icolumn = 0; icolumn < dataModel.getColumnCount(); icolumn++) {
+				Column column = dataModel.getColumn(icolumn);
+				for (PCAxis axis : axisList) {
+					if (axis.column == column) {
+						axis.dataModelIndex = icolumn;
+                        break;
+					}
+				}
+			}
 		}
 
 		// axisBarWidth = AXIS_BAR_WIDTH;
@@ -796,22 +806,22 @@ public class PCPanel extends JComponent implements ActionListener,
 
 		axisSpacing = (screenWidth - (BORDER_SIZE * 2)) / axisList.size();
 
-		//int pcpHeight = (int) (screenHeight * .7);
-		//scatterplotSize = screenHeight - pcpHeight - (secondaryFont.getSize() * 2);
+		int pcpHeight = (int) (screenHeight * .7);
+		scatterplotSize = screenHeight - pcpHeight - (secondaryFont.getSize() * 2);
 
+        if (scatterplotSize > (int)(axisSpacing * .8)) {
+            scatterplotSize = (int)(axisSpacing * .8);
+            pcpHeight = screenHeight - scatterplotSize - (int)(secondaryFont.getSize()*1.5);
+        }
 
-		// if (scatterplotSize > (int)(axisSpacing * .8)) {
-		// scatterplotSize = (int)(axisSpacing * .8);
-		// }
-
-		scatterplotSize = (int)((axisSpacing - (secondaryFont.getSize())));
-		int pcpHeight =  screenHeight - scatterplotSize - (int)(secondaryFont.getSize()*1.5);
-
-		/* Keep the scatterplot size from becoming too large */
-		if (scatterplotSize > (.5 * pcpHeight)) {
-			scatterplotSize = (int)(.5 * pcpHeight);
-			pcpHeight = screenHeight - scatterplotSize - (int)(secondaryFont.getSize()*1.5);
-		}
+//		scatterplotSize = (int)((axisSpacing - (secondaryFont.getSize())));
+//		int pcpHeight =  screenHeight - scatterplotSize - (int)(secondaryFont.getSize()*1.5);
+//
+//		/* Keep the scatterplot size from becoming too large */
+//		if (scatterplotSize > (.5 * pcpHeight)) {
+//			scatterplotSize = (int)(.5 * pcpHeight);
+//			pcpHeight = screenHeight - scatterplotSize - (int)(secondaryFont.getSize()*1.5);
+//		}
 
 		scatterplotOffset = (axisSpacing - scatterplotSize) / 2;
 
@@ -980,7 +990,7 @@ public class PCPanel extends JComponent implements ActionListener,
             
             // if there are axis selections for the axis, adjust the selection box locations
             if (!axis.axisSelectionList.isEmpty()) {	
-            	log.debug("axis + " + axis.column.getName() + " has " + axis.axisSelectionList.size() + " selections");
+//            	log.debug("axis + " + axis.column.getName() + " has " + axis.axisSelectionList.size() + " selections");
             	// for each axis selection, adjust min and max locations
                 for (PCAxisSelection axisSelection : axis.axisSelectionList) {
                     normValue = (axisSelection.getColumnSelectionRange().getMaxValue() - axis.column.getSummaryStats().getMin()) / (axis.column.getSummaryStats().getMax() - axis.column.getSummaryStats().getMin());
@@ -1234,7 +1244,9 @@ public class PCPanel extends JComponent implements ActionListener,
 	public void mouseClicked(MouseEvent event) {
 		if (SwingUtilities.isLeftMouseButton(event)) {
 			if (mouseOverAxis != null) {
-				if (event.getClickCount() == 2 && mouseOverAxis.frequencyDisplayRectangle.contains(event.getPoint())) {
+				if (event.getClickCount() == 2 &&
+                        mouseOverAxis.frequencyDisplayRectangle != null &&
+                        mouseOverAxis.frequencyDisplayRectangle.contains(event.getPoint())) {
 					double normPosition = (double) (event.getPoint().y - mouseOverAxis.axisBarRectangle.y)
 							/ (double) mouseOverAxis.axisBarRectangle.height;
 					double valueAtMousePoint = mouseOverAxis.column.getSummaryStats().getMax() - (normPosition * (mouseOverAxis.column.getSummaryStats().getMax() - mouseOverAxis.column.getSummaryStats().getMin()));

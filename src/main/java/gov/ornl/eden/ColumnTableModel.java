@@ -63,7 +63,7 @@ public class ColumnTableModel extends AbstractTableModel implements DataModelLis
 	@Override
 	public int getRowCount() {
 		if (dataModel != null) {
-			return dataModel.getColumnCount();
+			return dataModel.getColumnCount() + dataModel.getDisabledColumnCount();
 		}
 		return 0;
 	}
@@ -80,140 +80,250 @@ public class ColumnTableModel extends AbstractTableModel implements DataModelLis
 	}
 
 	public void setValueAt(Object value, int row, int col) {
-		if (row >= 0 && row < dataModel.getColumnCount()) {
-			// modifying an enabled column
-			Column column = dataModel.getColumn(row);
+        if (dataModel != null && row >= 0) {
+            Column column = null;
+            if (row < dataModel.getColumnCount()) {
+                column = dataModel.getColumn(row);
+            } else if ((row >= dataModel.getColumnCount()) &&
+                    (row < dataModel.getColumnCount() + dataModel.getDisabledColumnCount())) {
+                int disabledColumnIndex = row - dataModel.getColumnCount();
+                column = dataModel.getDisabledColumns().get(disabledColumnIndex);
+            }
 
-			if (col == 0) {
+            if (col == 0) {
 				if ((Boolean) value == true) {
 					dataModel.enableColumn(column);
 				} else {
 					dataModel.disableColumn(column);
 				}
-				// disabling a column
-				// dataModel.disableColumn(column);
 			} else if (col == 1) {
-				String newName = (String) value;
-				dataModel.setColumnName(column, newName);
-//			} else if (col == 13) {
-//				// set the minimum query value
-//				float floatValue = ((Float) value).floatValue();
-//				if (floatValue <= column.getMaxValue()
-//						&& floatValue >= column.getMinValue()
-//						&& floatValue <= column.getMaxQueryValue()) {
-//					column.setMinQueryValue(floatValue);
-//					dataModel.setQueriedTuples();
-//					// dataModel.fireQueryChanged();
+                String newName = (String) value;
+                dataModel.setColumnName(column, newName);
+            }
+        }
+//		if (row >= 0 && row < dataModel.getColumnCount()) {
+//			// modifying an enabled column
+//			Column column = dataModel.getColumn(row);
+//
+//			if (col == 0) {
+//				if ((Boolean) value == true) {
+//					dataModel.enableColumn(column);
+//				} else {
+//					dataModel.disableColumn(column);
 //				}
-//			} else if (col == 14) {
-//				float floatValue = ((Float) value).floatValue();
-//				if (floatValue <= column.getMaxValue()
-//						&& floatValue >= column.getMinValue()
-//						&& floatValue >= column.getMinQueryValue()) {
-//					column.setMaxQueryValue(floatValue);
-//					dataModel.setQueriedTuples();
-//					// dataModel.fireQueryChanged();
-//				}
-			}
-		}
+//				// disabling a column
+//				// dataModel.disableColumn(column);
+//			} else if (col == 1) {
+//				String newName = (String) value;
+//				dataModel.setColumnName(column, newName);
+////			} else if (col == 13) {
+////				// set the minimum query value
+////				float floatValue = ((Float) value).floatValue();
+////				if (floatValue <= column.getMaxValue()
+////						&& floatValue >= column.getMinValue()
+////						&& floatValue <= column.getMaxQueryValue()) {
+////					column.setMinQueryValue(floatValue);
+////					dataModel.setQueriedTuples();
+////					// dataModel.fireQueryChanged();
+////				}
+////			} else if (col == 14) {
+////				float floatValue = ((Float) value).floatValue();
+////				if (floatValue <= column.getMaxValue()
+////						&& floatValue >= column.getMinValue()
+////						&& floatValue >= column.getMinQueryValue()) {
+////					column.setMaxQueryValue(floatValue);
+////					dataModel.setQueriedTuples();
+////					// dataModel.fireQueryChanged();
+////				}
+//			}
+//		}
 	}
+
+	private Object getColumnStatValue(Column column, int statIndex) {
+        if (statIndex == 0) {
+            return new Boolean(column.isEnabled());
+        } else if (statIndex == 1) {
+            return column.getName();
+        } else if (statIndex == 2) {
+            if (showQueryStatistics && dataModel.getActiveQuery().hasColumnSelections()) {
+                return dataModel.getActiveQuery().getColumnQuerySummaryStats(column).getMean();
+            } else {
+                return column.getSummaryStats().getMean();
+            }
+        } else if (statIndex == 3) {
+            if (showQueryStatistics  && dataModel.getActiveQuery().hasColumnSelections()) {
+                return dataModel.getActiveQuery().getColumnQuerySummaryStats(column).getMedian();
+            } else {
+                return column.getSummaryStats().getMedian();
+            }
+        } else if (statIndex == 4) {
+            if (showQueryStatistics && dataModel.getActiveQuery().hasColumnSelections()) {
+                return dataModel.getActiveQuery().getColumnQuerySummaryStats(column).getStandardDeviation();
+            } else {
+                return column.getSummaryStats().getStandardDeviation();
+            }
+        } else if (statIndex == 5) {
+            if (showQueryStatistics && dataModel.getActiveQuery().hasColumnSelections()) {
+                return dataModel.getActiveQuery().getColumnQuerySummaryStats(column).getVariance();
+            } else {
+                return column.getSummaryStats().getVariance();
+            }
+        } else if (statIndex == 6) {
+            if (showQueryStatistics && dataModel.getActiveQuery().hasColumnSelections()) {
+                return dataModel.getActiveQuery().getColumnQuerySummaryStats(column).getQuantile1();
+            } else {
+                return column.getSummaryStats().getQuantile1();
+            }
+        } else if (statIndex == 7) {
+            if (showQueryStatistics && dataModel.getActiveQuery().hasColumnSelections()) {
+                return dataModel.getActiveQuery().getColumnQuerySummaryStats(column).getQuantile3();
+            } else {
+                return column.getSummaryStats().getQuantile3();
+            }
+        } else if (statIndex == 8) {
+            if (showQueryStatistics && dataModel.getActiveQuery().hasColumnSelections()) {
+                return dataModel.getActiveQuery().getColumnQuerySummaryStats(column).getIQR();
+            } else {
+                return column.getSummaryStats().getIQR();
+            }
+        } else if (statIndex == 9) {
+            if (showQueryStatistics && dataModel.getActiveQuery().hasColumnSelections()) {
+                return dataModel.getActiveQuery().getColumnQuerySummaryStats(column).getSkewness();
+            } else {
+                return column.getSummaryStats().getSkewness();
+            }
+        } else if (statIndex == 10) {
+            if (showQueryStatistics && dataModel.getActiveQuery().hasColumnSelections()) {
+                return dataModel.getActiveQuery().getColumnQuerySummaryStats(column).getKurtosis();
+            } else {
+                return column.getSummaryStats().getKurtosis();
+            }
+        } else if (statIndex == 11) {
+            if (showQueryStatistics && dataModel.getActiveQuery().hasColumnSelections()) {
+                return dataModel.getActiveQuery().getColumnQuerySummaryStats(column).getMin();
+            } else {
+                return column.getSummaryStats().getMin();
+            }
+        } else if (statIndex == 12) {
+            if (showQueryStatistics && dataModel.getActiveQuery().hasColumnSelections()) {
+                return dataModel.getActiveQuery().getColumnQuerySummaryStats(column).getMax();
+            } else {
+                return column.getSummaryStats().getMax();
+            }
+        }
+
+        return null;
+    }
 
 	@Override
 	public Object getValueAt(int row, int col) {
-		if (dataModel != null && dataModel.getColumnCount() > 0) {
-			Column column = null;
-			if (row >= 0 && row < dataModel.getColumnCount()) {
-				column = dataModel.getColumn(row);
-			} else {
-				return null;
-			}
+        if (dataModel != null && row >= 0) {
+            if (row < dataModel.getColumnCount()) {
+                return getColumnStatValue(dataModel.getColumn(row), col);
+            } else if ((row >= dataModel.getColumnCount()) &&
+                    (row < dataModel.getColumnCount() + dataModel.getDisabledColumnCount())) {
+                int disabledColumnIndex = row - dataModel.getColumnCount();
+                return getColumnStatValue(dataModel.getDisabledColumns().get(disabledColumnIndex), col);
+            }
+        }
 
-			if (col == 0) {
-				return new Boolean(column.isEnabled());
-			} else if (col == 1) {
-				return column.getName();
-			} else if (col == 2) {
-				if (showQueryStatistics && dataModel.getActiveQuery().hasColumnSelections()) {
-					// TODO: Add query statistics display
-					return dataModel.getActiveQuery().getColumnQuerySummaryStats(column).getMean();
-//					return column.getQueryMean();
-				} else {
-					return column.getSummaryStats().getMean();
-				}
-			} else if (col == 3) {
-				if (showQueryStatistics  && dataModel.getActiveQuery().hasColumnSelections()) {
-					return dataModel.getActiveQuery().getColumnQuerySummaryStats(column).getMedian();
-//					return column.getQueryMedian();
-				} else {
-					return column.getSummaryStats().getMedian();
-				}
-			} else if (col == 4) {
-				if (showQueryStatistics && dataModel.getActiveQuery().hasColumnSelections()) {
-					return dataModel.getActiveQuery().getColumnQuerySummaryStats(column).getStandardDeviation();
-//					return column.getQueryStandardDeviation();
-				} else {
-					return column.getSummaryStats().getStandardDeviation();
-				}
-			} else if (col == 5) {
-				if (showQueryStatistics && dataModel.getActiveQuery().hasColumnSelections()) {
-					return dataModel.getActiveQuery().getColumnQuerySummaryStats(column).getVariance();
-//					return column.getQueryVariance();
-				} else {
-					return column.getSummaryStats().getVariance();
-				}
-			} else if (col == 6) {
-				if (showQueryStatistics && dataModel.getActiveQuery().hasColumnSelections()) {
-					return dataModel.getActiveQuery().getColumnQuerySummaryStats(column).getQuantile1();
-//					return column.getQueryQ1();
-				} else {
-					return column.getSummaryStats().getQuantile1();
-				}
-			} else if (col == 7) {
-				if (showQueryStatistics && dataModel.getActiveQuery().hasColumnSelections()) {
-					return dataModel.getActiveQuery().getColumnQuerySummaryStats(column).getQuantile3();
-//					return column.getQueryQ3();
-				} else {
-					return column.getSummaryStats().getQuantile3();
-				}
-			} else if (col == 8) {
-				if (showQueryStatistics && dataModel.getActiveQuery().hasColumnSelections()) {
-					return dataModel.getActiveQuery().getColumnQuerySummaryStats(column).getIQR();
-//					return column.getQueryIQR();
-				} else {
-					return column.getSummaryStats().getIQR();
-				}
-			} else if (col == 9) {
-				if (showQueryStatistics && dataModel.getActiveQuery().hasColumnSelections()) {
-					return dataModel.getActiveQuery().getColumnQuerySummaryStats(column).getSkewness();
-//					return column.getQuerySkewness();
-				} else {
-					return column.getSummaryStats().getSkewness();
-				}
-			} else if (col == 10) {
-				if (showQueryStatistics && dataModel.getActiveQuery().hasColumnSelections()) {
-					return dataModel.getActiveQuery().getColumnQuerySummaryStats(column).getKurtosis();
-//					return column.getQueryKurtosis();
-				} else {
-					return column.getSummaryStats().getKurtosis();
-				}
-			} else if (col == 11) {
-				if (showQueryStatistics && dataModel.getActiveQuery().hasColumnSelections()) {
-					return dataModel.getActiveQuery().getColumnQuerySummaryStats(column).getMin();
-//					return column.getQueryMinValue();
-				} else {
-					return column.getSummaryStats().getMin();
-				}
-			} else if (col == 12) {
-				if (showQueryStatistics && dataModel.getActiveQuery().hasColumnSelections()) {
-					return dataModel.getActiveQuery().getColumnQuerySummaryStats(column).getMax();
-//					return column.getQueryMaxValue();
-				} else {
-					return column.getSummaryStats().getMax();
-				}
-			}
-		}
+        return null;
 
-		return null;
+//        System.out.println("in getValueAt() row = " + row + " disabled count = " + dataModel.getDisabledColumnCount());
+//		if (dataModel != null && dataModel.getColumnCount() > 0) {
+//			Column column = null;
+//			if (row >= 0 && row < dataModel.getColumnCount()) {
+//				column = dataModel.getColumn(row);
+//			} else {
+//				return null;
+//			}
+
+
+//			if (col == 0) {
+//				return new Boolean(column.isEnabled());
+//			} else if (col == 1) {
+//				return column.getName();
+//			} else if (col == 2) {
+//				if (showQueryStatistics && dataModel.getActiveQuery().hasColumnSelections()) {
+//					return dataModel.getActiveQuery().getColumnQuerySummaryStats(column).getMean();
+//				} else {
+//					return column.getSummaryStats().getMean();
+//				}
+//			} else if (col == 3) {
+//				if (showQueryStatistics  && dataModel.getActiveQuery().hasColumnSelections()) {
+//					return dataModel.getActiveQuery().getColumnQuerySummaryStats(column).getMedian();
+//				} else {
+//					return column.getSummaryStats().getMedian();
+//				}
+//			} else if (col == 4) {
+//				if (showQueryStatistics && dataModel.getActiveQuery().hasColumnSelections()) {
+//					return dataModel.getActiveQuery().getColumnQuerySummaryStats(column).getStandardDeviation();
+//				} else {
+//					return column.getSummaryStats().getStandardDeviation();
+//				}
+//			} else if (col == 5) {
+//				if (showQueryStatistics && dataModel.getActiveQuery().hasColumnSelections()) {
+//					return dataModel.getActiveQuery().getColumnQuerySummaryStats(column).getVariance();
+//				} else {
+//					return column.getSummaryStats().getVariance();
+//				}
+//			} else if (col == 6) {
+//				if (showQueryStatistics && dataModel.getActiveQuery().hasColumnSelections()) {
+//					return dataModel.getActiveQuery().getColumnQuerySummaryStats(column).getQuantile1();
+//				} else {
+//					return column.getSummaryStats().getQuantile1();
+//				}
+//			} else if (col == 7) {
+//				if (showQueryStatistics && dataModel.getActiveQuery().hasColumnSelections()) {
+//					return dataModel.getActiveQuery().getColumnQuerySummaryStats(column).getQuantile3();
+//				} else {
+//					return column.getSummaryStats().getQuantile3();
+//				}
+//			} else if (col == 8) {
+//				if (showQueryStatistics && dataModel.getActiveQuery().hasColumnSelections()) {
+//					return dataModel.getActiveQuery().getColumnQuerySummaryStats(column).getIQR();
+//				} else {
+//					return column.getSummaryStats().getIQR();
+//				}
+//			} else if (col == 9) {
+//				if (showQueryStatistics && dataModel.getActiveQuery().hasColumnSelections()) {
+//					return dataModel.getActiveQuery().getColumnQuerySummaryStats(column).getSkewness();
+//				} else {
+//					return column.getSummaryStats().getSkewness();
+//				}
+//			} else if (col == 10) {
+//				if (showQueryStatistics && dataModel.getActiveQuery().hasColumnSelections()) {
+//					return dataModel.getActiveQuery().getColumnQuerySummaryStats(column).getKurtosis();
+//				} else {
+//					return column.getSummaryStats().getKurtosis();
+//				}
+//			} else if (col == 11) {
+//				if (showQueryStatistics && dataModel.getActiveQuery().hasColumnSelections()) {
+//					return dataModel.getActiveQuery().getColumnQuerySummaryStats(column).getMin();
+//				} else {
+//					return column.getSummaryStats().getMin();
+//				}
+//			} else if (col == 12) {
+//				if (showQueryStatistics && dataModel.getActiveQuery().hasColumnSelections()) {
+//					return dataModel.getActiveQuery().getColumnQuerySummaryStats(column).getMax();
+//				} else {
+//					return column.getSummaryStats().getMax();
+//				}
+//			}
+//		}
+//
+//        if (dataModel != null && dataModel.getDisabledColumnCount() > 0) {
+//            Column column = null;
+//            if (row >= 0 && row < dataModel.getDisabledColumnCount()) {
+//                column = dataModel.getDisabledColumns().get(row - dataModel.getColumnCount());
+//            } else {
+//                return null;
+//            }
+//
+//            return getColumnStatValue(column, col);
+//        }
+//
+//		return null;
 	}
 
 	@Override

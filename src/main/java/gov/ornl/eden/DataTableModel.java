@@ -25,27 +25,27 @@ public class DataTableModel extends AbstractTableModel implements DataModelListe
 
     @Override
     public int getRowCount() {
-        log.debug("getRowCount() called");
+//        log.debug("getRowCount() called");
         if (dataModel.getActiveQuery().hasColumnSelections()) {
             // a query is set so return the number of queried tuples
-            log.debug("row count is " + dataModel.getQueriedTupleCount());
+//            log.debug("row count is " + dataModel.getQueriedTupleCount());
             return dataModel.getQueriedTupleCount();
         } else {
             // no query is set so return the totoal number of tuples
-            log.debug("row count is " + dataModel.getTupleCount());
+//            log.debug("row count is " + dataModel.getTupleCount());
             return dataModel.getTupleCount();
         }
     }
 
     @Override
     public int getColumnCount() {
-        log.debug("column count is " + dataModel.getColumnCount());
+//        log.debug("column count is " + dataModel.getColumnCount());
         return dataModel.getColumnCount();
     }
 
     @Override
     public Object getValueAt(int rowIndex, int columnIndex) {
-        log.debug("entered getValueAt()");
+//        log.debug("entered getValueAt()");
         if (columnIndex < dataModel.getColumnCount() && columnIndex >= 0) {
             if (dataModel.getActiveQuery().hasColumnSelections()) {
                 if (rowIndex >= 0 && rowIndex < dataModel.getQueriedTupleCount()) {
@@ -61,7 +61,7 @@ public class DataTableModel extends AbstractTableModel implements DataModelListe
     }
 
     public String getColumnName(int column) {
-        log.debug("getColumnName()");
+//        log.debug("getColumnName()");
         if (column < dataModel.getColumnCount() && column >= 0) {
             return dataModel.getColumn(column).getName();
         }
@@ -75,7 +75,7 @@ public class DataTableModel extends AbstractTableModel implements DataModelListe
     @Override
     public void dataModelChanged(DataModel dataModel) {
         fireTableStructureChanged();
-        log.debug("dataModelChanged() in DataTableModel");
+//        log.debug("dataModelChanged() in DataTableModel");
     }
 
     @Override
@@ -85,7 +85,7 @@ public class DataTableModel extends AbstractTableModel implements DataModelListe
 
     @Override
     public void queryChanged(DataModel dataModel) {
-        log.debug("queryChanged called");
+//        log.debug("queryChanged called");
         fireTableDataChanged();
     }
 
@@ -118,6 +118,4 @@ public class DataTableModel extends AbstractTableModel implements DataModelListe
     public void columnEnabled(DataModel dataModel, Column enabledColumn) {
         fireTableDataChanged();
     }
-
-
 }
