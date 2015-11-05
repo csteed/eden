@@ -8,16 +8,20 @@ import java.util.ArrayList;
 public class PCAxis {
 	public Column column;
 	public int dataModelIndex;
-	public Column xColumn;
 
 	public int xPosition = 0;
 	public int topPosition = 0;
 	public int bottomPosition = 0;
+
+    public int focusTop = 0;
+    public int focusBottom = 0;
+    public int upperContextTop = 0;
+    public int upperContextBottom = 0;
+    public int lowerContextTop = 0;
+    public int lowerContextBottom = 0;
+
 	public int axisHeight = 0;
 	public int axisWidth = 0;
-	public int leftPosition = 0;
-	public int rightPosition = 0;
-	public int yPosition = 0;
 
 	public Rectangle rectangle;
 	public Rectangle labelRectangle;
@@ -30,7 +34,6 @@ public class PCAxis {
 
 	public int medianPosition;
 	public int queryMedianPosition;
-
 	public int meanPosition;
 	public int queryMeanPosition;
 
@@ -39,17 +42,10 @@ public class PCAxis {
 
 	public Rectangle frequencyDisplayRectangle;
 
-	public int maxPosition, minPosition;
-//	public int queryMaxPosition, queryMinPosition;
-
 	public ArrayList<PCAxisSelection> axisSelectionList = new ArrayList<PCAxisSelection>();
 	
 	public int scatterplot_x0;
 	public int scatterplot_y0;
-
-	public PCAxis(Column column) {
-		this.column = column;
-	}
 
 	public PCAxis(Column column, int dataModelIndex) {
 		this.column = column;
