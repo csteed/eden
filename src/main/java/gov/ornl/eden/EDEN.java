@@ -7,10 +7,7 @@ import gov.ornl.datatable.DataModelListener;
 import gov.ornl.datatable.IOUtilities;
 import gov.ornl.datatable.Tuple;
 
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.EventQueue;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
@@ -18,6 +15,7 @@ import java.awt.event.ItemListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
+import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -53,7 +51,7 @@ public class EDEN implements DataModelListener, ActionListener, WindowListener,
 		ListSelectionListener, ItemListener, DisplaySettingsPanelListener {
 	private final static Logger log = LoggerFactory.getLogger(EDEN.class);
 
-	private final static String VERSION_STRING = "v0.11.2";
+	private final static String VERSION_STRING = "v0.11.3";
 	private final static String TITLE_STRING = "E D E N";
 
 	private JFrame edenFrame;
@@ -90,8 +88,9 @@ public class EDEN implements DataModelListener, ActionListener, WindowListener,
 	private JMenuItem arrangeByDispersionDifference;
 	private JMenuItem arrangeByTypical;
 	private JMenuItem arrangeByTypicalDifference;
+    private JMenu colorScaleMenu;
 
-	public EDEN() {
+    public EDEN() {
 		initialize();
 		edenFrame.addWindowListener(this);
 		edenFrame.setVisible(true);
@@ -319,6 +318,9 @@ public class EDEN implements DataModelListener, ActionListener, WindowListener,
 				KeyEvent.VK_Y);
 		arrangeByTypicalDifference.addActionListener(this);
 		arrangeMenu.add(arrangeByTypicalDifference);
+
+//		colorScaleMenu = new JMenu("Apply Color Scale to Axis");
+//        menu.add(colorScaleMenu);
 
 		// The data menu
 		menu = new JMenu("Data");
@@ -605,6 +607,7 @@ public class EDEN implements DataModelListener, ActionListener, WindowListener,
 					}
 					String path = selectedFile.getParentFile().getCanonicalPath();
 					GUIContext.getInstance().getProperties().put("LAST_CSV_DIRECTORY_PATH", path);
+					edenFrame.setTitle(VERSION_STRING + " | " + selectedFile.getName());
 				} catch (IOException e1) {
 					e1.printStackTrace();
 				}
@@ -624,6 +627,7 @@ public class EDEN implements DataModelListener, ActionListener, WindowListener,
 					IOUtilities.readCSV(selectedFile, dataModel);
 					String path = selectedFile.getParentFile().getCanonicalPath();
 					GUIContext.getInstance().getProperties().put("LAST_CSV_DIRECTORY_PATH", path);
+					edenFrame.setTitle(VERSION_STRING + " | " + selectedFile.getName());
 				} catch (IOException e1) {
 					e1.printStackTrace();
 				}
@@ -696,10 +700,21 @@ public class EDEN implements DataModelListener, ActionListener, WindowListener,
 			int ret = chooser.showSaveDialog(this.edenFrame);
 			if (ret == JFileChooser.APPROVE_OPTION) {
 				File selectedFile = chooser.getSelectedFile();
-
 				
-				BufferedImage pcPanelImage = new BufferedImage(pcPanel.getWidth(), pcPanel.getHeight(), BufferedImage.TYPE_INT_ARGB);
-				pcPanel.paintComponent(pcPanelImage.getGraphics());
+				BufferedImage pcPanelImage = new BufferedImage(pcPanel.getWidth()*4, pcPanel.getHeight()*4, BufferedImage.TYPE_INT_ARGB);
+
+                Graphics2D g2 = pcPanelImage.createGraphics();
+
+                g2.setRenderingHint(RenderingHints.KEY_ALPHA_INTERPOLATION, RenderingHints.VALUE_ALPHA_INTERPOLATION_QUALITY);
+                g2.setRenderingHint(RenderingHints.KEY_COLOR_RENDERING, RenderingHints.VALUE_COLOR_RENDER_QUALITY);
+                g2.setRenderingHint(RenderingHints.KEY_DITHERING, RenderingHints.VALUE_DITHER_ENABLE);
+                g2.setRenderingHint(RenderingHints.KEY_FRACTIONALMETRICS, RenderingHints.VALUE_FRACTIONALMETRICS_ON);
+                g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+                g2.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
+                g2.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_PURE);
+                g2.setTransform(AffineTransform.getScaleInstance(4., 4.));
+
+				pcPanel.paintComponent(g2);
 				
 				try {
 					ImageIO.write(pcPanelImage, "png", selectedFile);
