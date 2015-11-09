@@ -88,7 +88,6 @@ public class EDEN implements DataModelListener, ActionListener, WindowListener,
 	private JMenuItem arrangeByDispersionDifference;
 	private JMenuItem arrangeByTypical;
 	private JMenuItem arrangeByTypicalDifference;
-    private JMenu colorScaleMenu;
 
     public EDEN() {
 		initialize();
@@ -371,7 +370,7 @@ public class EDEN implements DataModelListener, ActionListener, WindowListener,
 		// int initialAlphaValue = (int) ((double)
 		// (pcPanel.getAlphaValue()/255.) * 100);
 		settingsPanel = new DisplaySettingsPanel(pcPanel.getFocusLineColor(),
-				pcPanel.getContextLineColor());
+				pcPanel.getContextLineColor(), pcPanel.getHighlightedLineColor());
 		settingsPanel.addPCDisplaySettingsPanelListener(this);
 		settingsPanel.setBorder(BorderFactory
 				.createTitledBorder("Display Settings"));
@@ -813,8 +812,6 @@ public class EDEN implements DataModelListener, ActionListener, WindowListener,
 
 	@Override
 	public void valueChanged(ListSelectionEvent event) {
-		// log.debug("valueChanged source class is " +
-		// event.getSource().getClass().toString());
 		if (event.getSource() == statsTable.getSelectionModel()) {
 			if (event.getValueIsAdjusting()) {
 				return;
@@ -823,6 +820,33 @@ public class EDEN implements DataModelListener, ActionListener, WindowListener,
 					statsTable.getSelectedRow(), 1);
 			Column column = dataModel.getColumn(columnName);
 			dataModel.setHighlightedColumn(column);
+		} else if (event.getSource() == dataTable.getSelectionModel()) {
+			if (event.getValueIsAdjusting()) {
+				return;
+			}
+
+			// get indices of selected tuples
+			// populate array of selected tuples
+			// repaint (paint component will draw selected tuples with more visual saliency
+            ArrayList<Tuple> selectedTuples = new ArrayList<>();
+			if (dataTable.getSelectedRowCount() > 0) {
+				int selectedRows[] = dataTable.getSelectedRows();
+				if (dataModel.getActiveQuery().hasColumnSelections()) {
+					// get tuples from queried tuple list
+                    for (int rowIndex : selectedRows) {
+                        Tuple tuple = dataModel.getActiveQuery().getTuples().get(rowIndex);
+                        selectedTuples.add(tuple);
+                    }
+				} else {
+					// get tuples from full tuple list
+                    for (int rowIndex : selectedRows) {
+                        Tuple tuple = dataModel.getTuples().get(rowIndex);
+                        selectedTuples.add(tuple);
+                    }
+				}
+			}
+            pcPanel.setHighlightedTuples(selectedTuples);
+
 		}
 	}
 
@@ -948,7 +972,12 @@ public class EDEN implements DataModelListener, ActionListener, WindowListener,
 		pcPanel.setLineSize(size);
 	}
 
-	@Override
+    @Override
+    public void highlightedDataColorChanged(Color color) {
+        pcPanel.setDefaultHighlightedLineColor(color);
+    }
+
+    @Override
 	public void dataModelColumnSelectionAdded(DataModel dataModel, ColumnSelectionRange columnSelectionRange) {
 		// TODO Auto-generated method stub
 		boolean querySet = dataModel.getActiveQuery() != null && dataModel.getActiveQuery().hasColumnSelections();

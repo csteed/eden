@@ -41,6 +41,12 @@ public class DisplaySettingsPanel extends JPanel implements ChangeListener,
 	private JSpinner unselectedDataAlphaSpinner;
 	private SpinnerNumberModel unselectedDataAlphaSpinnerModel;
 
+	private ColorIcon highlightedDataColorIcon;
+	private JButton highlightedDataColorButton;
+	private JSlider highlightedDataAlphaSlider;
+	private JSpinner highlightedDataAlphaSpinner;
+	private SpinnerNumberModel highlightedDataAlphaSpinnerModel;
+
 	private SpinnerNumberModel titleFontSpinnerModel;
 
 	private JSpinner titleFontSpinner;
@@ -61,9 +67,9 @@ public class DisplaySettingsPanel extends JPanel implements ChangeListener,
 
 	private JSpinner pcpLineSizeSpinner;
 
-	public DisplaySettingsPanel(Color selectedDataColor,
-			Color unselectedDataColor) {
-		layoutPanel(selectedDataColor, unselectedDataColor);
+	public DisplaySettingsPanel(Color selectedDataColor, Color unselectedDataColor,
+                                Color highlightedDataColor) {
+		layoutPanel(selectedDataColor, unselectedDataColor, highlightedDataColor);
 	}
 
 	public void addPCDisplaySettingsPanelListener(
@@ -73,7 +79,7 @@ public class DisplaySettingsPanel extends JPanel implements ChangeListener,
 		}
 	}
 
-	private void layoutPanel(Color selectedDataColor, Color unselectedDataColor) {
+	private void layoutPanel(Color selectedDataColor, Color unselectedDataColor, Color highlightedDataColor) {
 		JPanel mainPanel = new JPanel();
 		GridBagConstraints gbc = new GridBagConstraints();
 		mainPanel.setLayout(new GridBagLayout());
@@ -156,9 +162,47 @@ public class DisplaySettingsPanel extends JPanel implements ChangeListener,
 		unselectedDataAlphaSpinner.addChangeListener(this);
 		mainPanel.add(unselectedDataAlphaSpinner, gbc);
 
+        // Add unselected data color fields
+        label = new JLabel("Highlighted Data Color: ");
+        gbc.gridx = 0;
+        gbc.gridy = 2;
+        gbc.gridwidth = 1;
+        gbc.weightx = 0.f;
+        gbc.anchor = GridBagConstraints.LINE_START;
+
+        mainPanel.add(label, gbc);
+
+        highlightedDataColorIcon = new ColorIcon(highlightedDataColor);
+        highlightedDataColorButton = new JButton(highlightedDataColorIcon);
+        highlightedDataColorButton.setBackground(Color.white);
+        highlightedDataColorButton.addActionListener(this);
+        gbc.gridx = 1;
+        mainPanel.add(highlightedDataColorButton, gbc);
+
+        label = new JLabel(" Tranparency: ");
+        gbc.gridx = 2;
+        mainPanel.add(label, gbc);
+
+        initialAlphaValue = (int) ((double) (highlightedDataColor.getAlpha() / 255.) * 100);
+        highlightedDataAlphaSlider = new JSlider(JSlider.HORIZONTAL, 0, 100,
+                initialAlphaValue);
+        highlightedDataAlphaSlider.addChangeListener(this);
+        gbc.gridx = 3;
+        gbc.gridwidth = 2;
+        gbc.anchor = GridBagConstraints.LINE_START;
+        mainPanel.add(highlightedDataAlphaSlider, gbc);
+
+        gbc.gridx = 5;
+        gbc.weightx = 1.f;
+        gbc.anchor = GridBagConstraints.LINE_START;
+        highlightedDataAlphaSpinnerModel = new SpinnerNumberModel(initialAlphaValue, 0, 100, 1);
+        highlightedDataAlphaSpinner = new JSpinner(highlightedDataAlphaSpinnerModel);
+        highlightedDataAlphaSpinner.addChangeListener(this);
+        mainPanel.add(highlightedDataAlphaSpinner, gbc);
+
 		label = new JLabel("Axis Label Font Size: ");
 		gbc.gridx = 0;
-		gbc.gridy = 2;
+		gbc.gridy = 3;
 		gbc.gridwidth = 1;
 		gbc.weightx = 0.f;
 		gbc.anchor = GridBagConstraints.LINE_START;
@@ -172,7 +216,7 @@ public class DisplaySettingsPanel extends JPanel implements ChangeListener,
 
 		label = new JLabel("Axis Secondary Font Size: ");
 		gbc.gridx = 0;
-		gbc.gridy = 3;
+		gbc.gridy = 4;
 		gbc.gridwidth = 1;
 		gbc.weightx = 0.f;
 		gbc.anchor = GridBagConstraints.LINE_START;
@@ -186,7 +230,7 @@ public class DisplaySettingsPanel extends JPanel implements ChangeListener,
 
 		label = new JLabel("Axis Width: ");
 		gbc.gridx = 0;
-		gbc.gridy = 4;
+		gbc.gridy = 5;
 		gbc.gridwidth = 1;
 		gbc.weightx = 0.f;
 		gbc.anchor = GridBagConstraints.LINE_START;
@@ -200,23 +244,21 @@ public class DisplaySettingsPanel extends JPanel implements ChangeListener,
 
 		label = new JLabel("Axis Correlation Box Height: ");
 		gbc.gridx = 0;
-		gbc.gridy = 5;
+		gbc.gridy = 6;
 		gbc.gridwidth = 1;
 		gbc.weightx = 0.f;
 		gbc.anchor = GridBagConstraints.LINE_START;
 		mainPanel.add(label, gbc);
 
 		gbc.gridx = 1;
-		correlationBoxHeightSpinnerModel = new SpinnerNumberModel(10, 10, 120,
-				5);
-		correlationBoxHeightSpinner = new JSpinner(
-				correlationBoxHeightSpinnerModel);
+		correlationBoxHeightSpinnerModel = new SpinnerNumberModel(10, 10, 120, 5);
+		correlationBoxHeightSpinner = new JSpinner(correlationBoxHeightSpinnerModel);
 		correlationBoxHeightSpinner.addChangeListener(this);
 		mainPanel.add(correlationBoxHeightSpinner, gbc);
 
 		label = new JLabel("Parallel Coordinate Line Size: ");
 		gbc.gridx = 0;
-		gbc.gridy = 6;
+		gbc.gridy = 7;
 		gbc.gridwidth = 1;
 		gbc.weightx = 0.f;
 		gbc.anchor = GridBagConstraints.LINE_START;
@@ -245,6 +287,13 @@ public class DisplaySettingsPanel extends JPanel implements ChangeListener,
 			listener.unselectedDataColorChanged(color);
 		}
 	}
+
+    private void fireHighlightedDataColorChanged() {
+        Color color = highlightedDataColorIcon.getColor();
+        for (DisplaySettingsPanelListener listener : listeners) {
+            listener.highlightedDataColorChanged(color);
+        }
+    }
 
 	private void notifyListenersSecondaryFontSizeChanged(int fontSize) {
 		for (DisplaySettingsPanelListener listener : listeners) {
@@ -317,6 +366,24 @@ public class DisplaySettingsPanel extends JPanel implements ChangeListener,
 			double alpha = spinnerValue / 100.;
 			int iAlpha = (int) (255 * alpha);
 			unselectedDataAlphaSlider.setValue(spinnerValue);
+        } else if (event.getSource() == highlightedDataAlphaSlider) {
+            if (!highlightedDataAlphaSlider.getValueIsAdjusting()) {
+                double alpha = highlightedDataAlphaSlider.getValue() / 100.;
+                int iAlpha = (int) (255 * alpha);
+                Color color = new Color(highlightedDataColorIcon.getColor()
+                        .getRed(), highlightedDataColorIcon.getColor()
+                        .getGreen(), highlightedDataColorIcon.getColor()
+                        .getBlue(), iAlpha);
+                highlightedDataColorIcon.setColor(color);
+                repaint();
+                fireHighlightedDataColorChanged();
+            }
+            highlightedDataAlphaSpinnerModel.setValue(highlightedDataAlphaSlider.getValue());
+        } else if (event.getSource() == highlightedDataAlphaSpinner) {
+            int spinnerValue = ((Number) highlightedDataAlphaSpinnerModel.getValue()).intValue();
+            double alpha = spinnerValue / 100.;
+            int iAlpha = (int) (255 * alpha);
+            highlightedDataAlphaSlider.setValue(spinnerValue);
 		} else if (event.getSource() == titleFontSpinner) {
 			int fontSize = ((Number) titleFontSpinner.getValue()).intValue();
 			notifyListenersTitleFontSizeChanged(fontSize);
@@ -385,6 +452,18 @@ public class DisplaySettingsPanel extends JPanel implements ChangeListener,
 				repaint();
 				fireUnselectedDataColorChanged();
 			}
-		}
+		}  else if (event.getSource() == highlightedDataColorButton) {
+            Color color = highlightedDataColorIcon.getColor();
+            int alpha = color.getAlpha();
+            color = JColorChooser.showDialog(this, "Choose Highlighted Data Color", color);
+            if (color != null) {
+                color = new Color(color.getRed(), color.getGreen(), color.getBlue(), alpha);
+                highlightedDataColorIcon.setColor(color);
+                int newSpinnerValue = (int) ((double) (color.getAlpha() / 255.) * 100);
+                highlightedDataAlphaSpinnerModel.setValue(newSpinnerValue);
+                repaint();
+                fireHighlightedDataColorChanged();
+            }
+        }
 	}
 }

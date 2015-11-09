@@ -123,7 +123,7 @@ public class ScatterPlotFrame extends JFrame implements DisplaySettingsPanelList
 
 	private void initializePanel() {
 		displaySettingsPanel = new DisplaySettingsPanel(config.pointColor,
-				nonqueryConfig.pointColor);
+				nonqueryConfig.pointColor, config.pointColor);
 		displaySettingsPanel.addPCDisplaySettingsPanelListener(this);
 		displaySettingsPanel.setBorder(BorderFactory
 				.createTitledBorder("Display Settings"));
@@ -277,6 +277,11 @@ public class ScatterPlotFrame extends JFrame implements DisplaySettingsPanelList
 	@Override
 	public void pcLineSizeChanged(int size) {
 		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public void highlightedDataColorChanged(Color color) {
 
 	}
 }

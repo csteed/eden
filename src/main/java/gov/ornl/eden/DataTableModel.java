@@ -7,9 +7,6 @@ import org.slf4j.LoggerFactory;
 import javax.swing.table.AbstractTableModel;
 import java.util.ArrayList;
 
-/**
- * Created by csg on 10/8/15.
- */
 public class DataTableModel extends AbstractTableModel implements DataModelListener {
     private final static Logger log = LoggerFactory.getLogger(DataTableModel.class);
     private DataModel dataModel;
@@ -25,27 +22,22 @@ public class DataTableModel extends AbstractTableModel implements DataModelListe
 
     @Override
     public int getRowCount() {
-//        log.debug("getRowCount() called");
         if (dataModel.getActiveQuery().hasColumnSelections()) {
             // a query is set so return the number of queried tuples
-//            log.debug("row count is " + dataModel.getQueriedTupleCount());
             return dataModel.getQueriedTupleCount();
         } else {
             // no query is set so return the totoal number of tuples
-//            log.debug("row count is " + dataModel.getTupleCount());
             return dataModel.getTupleCount();
         }
     }
 
     @Override
     public int getColumnCount() {
-//        log.debug("column count is " + dataModel.getColumnCount());
         return dataModel.getColumnCount();
     }
 
     @Override
     public Object getValueAt(int rowIndex, int columnIndex) {
-//        log.debug("entered getValueAt()");
         if (columnIndex < dataModel.getColumnCount() && columnIndex >= 0) {
             if (dataModel.getActiveQuery().hasColumnSelections()) {
                 if (rowIndex >= 0 && rowIndex < dataModel.getQueriedTupleCount()) {
@@ -61,7 +53,6 @@ public class DataTableModel extends AbstractTableModel implements DataModelListe
     }
 
     public String getColumnName(int column) {
-//        log.debug("getColumnName()");
         if (column < dataModel.getColumnCount() && column >= 0) {
             return dataModel.getColumn(column).getName();
         }
@@ -75,7 +66,6 @@ public class DataTableModel extends AbstractTableModel implements DataModelListe
     @Override
     public void dataModelChanged(DataModel dataModel) {
         fireTableStructureChanged();
-//        log.debug("dataModelChanged() in DataTableModel");
     }
 
     @Override
@@ -85,7 +75,6 @@ public class DataTableModel extends AbstractTableModel implements DataModelListe
 
     @Override
     public void queryChanged(DataModel dataModel) {
-//        log.debug("queryChanged called");
         fireTableDataChanged();
     }
 

@@ -55,10 +55,10 @@ public class PCPanel extends JComponent implements ActionListener,
 	public static final int RENDER_TUPLES_AS_DOTS = 0;
 	public static final int RENDER_TUPLES_AS_LINES = 1;
 
-	public final static Color DEFAULT_CONTEXT_LINE_COLOR = new Color(210, 210,
-			210, 40);
-	public final static Color DEFAULT_FOCUS_LINE_COLOR = new Color(20, 20, 80,
-			40);
+	public final static Color DEFAULT_CONTEXT_LINE_COLOR = new Color(210, 210, 210, 40);
+	public final static Color DEFAULT_FOCUS_LINE_COLOR = new Color(20, 20, 80, 40);
+    public final static Color DEFAULT_HIGHLIGHTED_LINE_COLOR = new Color(0, 0, 20, 255);
+
 	private final static int BORDER_SIZE = 5;
 	// private final static int AXIS_WIDTH = 30;
 	private final static int AXIS_BAR_WIDTH = 20;
@@ -106,6 +106,7 @@ public class PCPanel extends JComponent implements ActionListener,
 	private int scatterplotOffset;
 	private Color focusLineColor = DEFAULT_FOCUS_LINE_COLOR;
 	private Color contextLineColor = DEFAULT_CONTEXT_LINE_COLOR;
+    private Color highlightedLineColor = DEFAULT_HIGHLIGHTED_LINE_COLOR;
 	private int scatterplotAxisSize = /* 12 */14;
 
 	// HashMaps for scatterplot images
@@ -144,6 +145,9 @@ public class PCPanel extends JComponent implements ActionListener,
 	private PCAxisSelection mouseOverAxisSelection;
     private PCAxisSelection draggingAxisSelection;
 
+	private ArrayList<Tuple> highlightedTuples = new ArrayList<>();
+    private ArrayList<Point[]> highlightedTupleLines = new ArrayList<>();
+
 	public PCPanel(DataModel dataModel) {
 		focusScatterPlotConfig = new ScatterplotConfiguration();
 		focusScatterPlotConfig.showAxisLabels = false;
@@ -163,6 +167,13 @@ public class PCPanel extends JComponent implements ActionListener,
 		addMouseListener(this);
 		addMouseMotionListener(this);
 	}
+
+    public void setHighlightedTuples(ArrayList<Tuple> tuples) {
+        highlightedTuples.clear();
+        highlightedTuples.addAll(tuples);
+        calculateHighlightedPolylines();
+        repaint();
+    }
 
 	public void setAntialiasEnabled(boolean antialiasEnabled) {
 		if (this.antialiasEnabled != antialiasEnabled) {
@@ -226,6 +237,7 @@ public class PCPanel extends JComponent implements ActionListener,
 			this.axisBarWidth = width;
 			layoutAxes();
 			recalculatePolylines();
+            calculateHighlightedPolylines();
 			startAxesImageRenderer();
 			startContextLineRenderer();
 			startFocusLineRenderer();
@@ -242,6 +254,7 @@ public class PCPanel extends JComponent implements ActionListener,
 			this.correlationIndicatorHeight = size;
 			layoutAxes();
 			recalculatePolylines();
+            calculateHighlightedPolylines();
 			startAxesImageRenderer();
 			startContextLineRenderer();
 			startFocusLineRenderer();
@@ -254,6 +267,7 @@ public class PCPanel extends JComponent implements ActionListener,
 			titleFont = new Font("Dialog", Font.BOLD, fontSize);
 			layoutAxes();
 			recalculatePolylines();
+            calculateHighlightedPolylines();
 			startAxesImageRenderer();
 			startContextLineRenderer();
 			startFocusLineRenderer();
@@ -266,6 +280,7 @@ public class PCPanel extends JComponent implements ActionListener,
 			secondaryFont = new Font("Dialog", Font.PLAIN, fontSize);
 			layoutAxes();
 			recalculatePolylines();
+            calculateHighlightedPolylines();
 			startAxesImageRenderer();
 			startContextLineRenderer();
 			startFocusLineRenderer();
@@ -304,6 +319,15 @@ public class PCPanel extends JComponent implements ActionListener,
 	public int getAlphaValue() {
 		return focusLineColor.getAlpha();
 	}
+
+    public Color getHighlightedLineColor() {
+        return highlightedLineColor;
+    }
+
+    public void setDefaultHighlightedLineColor(Color color) {
+        highlightedLineColor = color;
+        repaint();
+    }
 
 	public Color getFocusLineColor() {
 		return focusLineColor;
@@ -434,6 +458,30 @@ public class PCPanel extends JComponent implements ActionListener,
 		}
 	}
 
+    public void drawHighlightedTuples(Graphics2D g2) {
+        g2.setColor(highlightedLineColor);
+        g2.setStroke(new BasicStroke(pcLineSize));
+
+        int axisBarWidthHalf;
+        if (showAxesAsBars) {
+            axisBarWidthHalf = axisBarWidth / 2;
+        } else {
+            axisBarWidthHalf = 0;
+        }
+
+        for (Point tuplePoints[] : highlightedTupleLines) {
+            int x0 = tuplePoints[0].x + axisBarWidthHalf;
+            int y0 = tuplePoints[0].y;
+            for (int j = 1; j < tuplePoints.length; j++) {
+                int x1 = tuplePoints[j].x - axisBarWidthHalf;
+                int y1 = tuplePoints[j].y;
+                g2.drawLine(x0, y0, x1, y1);
+                x0 = tuplePoints[j].x + axisBarWidthHalf;
+                y0 = y1;
+            }
+        }
+    }
+
 	public void paintComponent(Graphics g) {
 		super.paintComponent(g);
 
@@ -442,10 +490,8 @@ public class PCPanel extends JComponent implements ActionListener,
 		g2.fillRect(0, 0, getWidth(), getHeight());
 
 		if (antialiasEnabled) {
-			g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
-					RenderingHints.VALUE_ANTIALIAS_ON);
-			g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING,
-					RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+			g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+			g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
 		}
 
 		if (showPolylines) {
@@ -463,6 +509,10 @@ public class PCPanel extends JComponent implements ActionListener,
 				g2.drawImage(newLinesImage, 0, 0, newLinesImage.getWidth(),
 						newLinesImage.getHeight(), null);
 			}
+
+            if (!highlightedTuples.isEmpty()) {
+                drawHighlightedTuples(g2);
+            }
 		}
 
 		if (axesImage != null) {
@@ -770,6 +820,30 @@ public class PCPanel extends JComponent implements ActionListener,
 			tupleLines.add(tuplePoints);
 		}
 	}
+
+    private void calculateHighlightedPolylines() {
+        highlightedTupleLines.clear();
+        if (highlightedTuples.isEmpty()) {
+            return;
+        }
+
+        for (int ituple = 0; ituple < highlightedTuples.size(); ituple++) {
+            Tuple currentTuple = highlightedTuples.get(ituple);
+
+            Point tuplePoints[] = new Point[dataModel.getColumnCount()];
+            for (int iaxis = 0; iaxis < axisList.size(); iaxis++) {
+                PCAxis axis = axisList.get(iaxis);
+                int xPosition = axis.xPosition;
+                float currentValue = currentTuple.getElement(axis.dataModelIndex);
+                double normValue = (currentValue - axis.column.getSummaryStats().getMin())
+                        / (axis.column.getSummaryStats().getMax() - axis.column.getSummaryStats().getMin());
+                int currentYPosition = axis.bottomPosition - (int) (normValue * axis.axisHeight);
+                tuplePoints[iaxis] = new Point(xPosition, currentYPosition);
+            }
+
+            highlightedTupleLines.add(tuplePoints);
+        }
+    }
 
 	protected void layoutAxes() {
 		if (dataModel.getColumnCount() == 0) {
@@ -1371,6 +1445,7 @@ public class PCPanel extends JComponent implements ActionListener,
 
 			layoutAxes();
 			recalculatePolylines();
+            calculateHighlightedPolylines();
 			startAxesImageRenderer();
 			startFocusLineRenderer();
 			startContextLineRenderer();
@@ -1429,6 +1504,7 @@ public class PCPanel extends JComponent implements ActionListener,
 
 		recalculateQueryBoxes();
 		recalculatePolylines();
+        calculateHighlightedPolylines();
 		startScatterplotRenderers();
 		startAxesImageRenderer();
 		startContextLineRenderer();
@@ -1445,6 +1521,7 @@ public class PCPanel extends JComponent implements ActionListener,
 		axisList = null;
 		layoutAxes();
 		recalculatePolylines();
+        calculateHighlightedPolylines();
 		dataModel.setQueriedTuples();
 
 		if (dataModel.getTupleCount() > 0) {
@@ -1462,6 +1539,7 @@ public class PCPanel extends JComponent implements ActionListener,
 				axisList.remove(axis);
 				layoutAxes();
 				recalculatePolylines();
+                calculateHighlightedPolylines();
 				dataModel.setQueriedTuples();
 				if (dataModel.getTupleCount() > 0) {
 					startAxesImageRenderer();
@@ -1489,6 +1567,7 @@ public class PCPanel extends JComponent implements ActionListener,
 
 		layoutAxes();
 		recalculatePolylines();
+        calculateHighlightedPolylines();
 		dataModel.setQueriedTuples();
 		if (dataModel.getTupleCount() > 0) {
 			startAxesImageRenderer();
@@ -1504,6 +1583,7 @@ public class PCPanel extends JComponent implements ActionListener,
 		axisList.add(new PCAxis(enabledColumn, dataModelIndex));
 		layoutAxes();
 		recalculatePolylines();
+        calculateHighlightedPolylines();
 		dataModel.setQueriedTuples();
 		if (dataModel.getTupleCount() > 0) {
 			startAxesImageRenderer();
@@ -1651,6 +1731,7 @@ public class PCPanel extends JComponent implements ActionListener,
 
 		layoutAxes();
 		recalculatePolylines();
+        calculateHighlightedPolylines();
 		startAxesImageRenderer();
 		startContextLineRenderer();
 		startFocusLineRenderer();
@@ -1698,6 +1779,7 @@ public class PCPanel extends JComponent implements ActionListener,
 
 		layoutAxes();
 		recalculatePolylines();
+        calculateHighlightedPolylines();
 		startAxesImageRenderer();
 		startContextLineRenderer();
 		startFocusLineRenderer();
@@ -1738,6 +1820,7 @@ public class PCPanel extends JComponent implements ActionListener,
 
 			layoutAxes();
 			recalculatePolylines();
+            calculateHighlightedPolylines();
 			startAxesImageRenderer();
 			startContextLineRenderer();
 			startFocusLineRenderer();
@@ -1782,6 +1865,7 @@ public class PCPanel extends JComponent implements ActionListener,
 	
 			layoutAxes();
 			recalculatePolylines();
+            calculateHighlightedPolylines();
 			startAxesImageRenderer();
 			startContextLineRenderer();
 			startFocusLineRenderer();
@@ -1830,6 +1914,7 @@ public class PCPanel extends JComponent implements ActionListener,
 
 		layoutAxes();
 		recalculatePolylines();
+        calculateHighlightedPolylines();
 		startAxesImageRenderer();
 		startContextLineRenderer();
 		startFocusLineRenderer();

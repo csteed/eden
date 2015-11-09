@@ -18,4 +18,6 @@ public interface DisplaySettingsPanelListener {
 	public void correlationBoxSizeChanged(int size);
 
 	public void pcLineSizeChanged(int size);
+
+	public void highlightedDataColorChanged(Color color);
 }
