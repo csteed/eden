@@ -12,6 +12,8 @@ public class PCAxis {
 	public int xPosition = 0;
 	public int topPosition = 0;
 	public int bottomPosition = 0;
+	public int leftPosition = 0;
+	public int rightPosition = 0;
 
     public int focusTop = 0;
     public int focusBottom = 0;
